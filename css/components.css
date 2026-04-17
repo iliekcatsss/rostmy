@@ -58,28 +58,35 @@
 
 .detail {
     width: 100%;
-    max-width: 800px;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .detail-titulo {
     background: none;
     border: none;
     outline: none;
-    font-size: 2rem;
-    font-weight: bold;
-    width: 100%;
-    box-shadow: none;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #fff;
+    flex-grow: 1;
 }
 
 .detail-contenido {
-    background: none;
+    display: none;
+    flex: 1;
+    background: #121314;
+    color: #aaa;
     border: none;
-    outline: none;
+    border-right: 1px solid #28292a;
+    padding: 20px;
+    font-family: 'Fira Code', monospace;
+    font-size: 1rem;
+    height: 70vh;
     resize: none;
-    width: 100%;
-    field-sizing: content;
-    box-shadow: none;
-    font-size: 1.1rem;
+    outline: none;
 }
 
 /* botones */
@@ -92,12 +99,6 @@ button {
     border: none;
     padding: 5px 15px;
     cursor: pointer;
-}
-
-.guardar {
-    border: none;
-    background: none;
-    color: white;
 }
 
 .añadir {
@@ -139,4 +140,59 @@ button {
     font-size: 12px;
     padding: 2px;
     filter: grayscale(1);
+}
+
+#btn-menu {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 101;
+    background: #1e1e1e;
+    color: white;
+    border: 1px solid #28292a;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    border-bottom: 1px solid #28292a;
+    padding-bottom: 15px;
+}
+
+.editor-container {
+    display: flex;
+    width: 100%;
+    background: #121314;
+}
+
+.editor-container.editing {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+}
+
+.editor-container.editing .detail-contenido {
+    display: block;
+}
+
+.detail-contenido, #preview {
+    height: 75vh;
+    padding: 25px;
+    background: #121314;
+}
+
+#preview {
+    flex: 1;
+    background: #121314;
+    color: #e0e0e0;
+    padding: 20px;
+    height: 70vh;
+    overflow-y: auto;
 }

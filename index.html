@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rostmy</title>
     <link rel="stylesheet" href="css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <!-- <div id="navbar"></div> -->
     <!-- <script src="js/navbar.js"></script> -->
+    <button id="btn-menu">☰</button>
+    <div class="overlay" id="overlay"></div>
     <div class="content">
         <div class="card tree">
             <button id="btn-logout">Cerrar Sesión</button>
@@ -18,11 +21,15 @@
             </aside>
         </div>
         <div class="card">
-            <h1>Rostmy</h1>
+            <h1 id="placeholder-title">Rostmy</h1>
 
-            <main class="detail">
+            <main class="detail" id="editor-view" style="display: none;">
                 <input class="detail-titulo" type="text" placeholder="Título...">
-                <textarea class="detail-contenido" placeholder="Escribe aquí..."></textarea>
+                <div class="editor-container">
+                    <textarea id="editor" class="detail-contenido" placeholder="Escribe aquí..."></textarea>
+                    <div id="preview" class="markdown-body"></div>
+                </div>
+
                 <button class="guardar">Guardar</button>
             </main>
         </div>

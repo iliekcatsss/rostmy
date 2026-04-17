@@ -135,9 +135,19 @@ async function nuevaCarpeta(parentId) {
 
 async function eliminarCarpeta(id) {
     if (!confirm('¿Eliminar carpeta y todo su contenido?')) return
+    await eliminarCarpetaRecursivo(id)
+    await cargarArbol()
+}
+
+async function eliminarCarpetaRecursivo(id) {
+    const { data: hijos } = await supabase.from('carpetas').select('id').eq('parent_id', id)
+
+    for (const hijo of hijos) {
+        await eliminarCarpetaRecursivo(hijo.id)
+    }
+
     await supabase.from('entradas').delete().eq('carpeta_id', id)
     await supabase.from('carpetas').delete().eq('id', id)
-    await cargarArbol()
 }
 
 // crud entradas
@@ -166,8 +176,19 @@ async function eliminarEntrada(id) {
 // detalle
 function abrirEntrada(entrada) {
     itemActual = entrada
+
+    const editorView = document.getElementById('editor-view')
+    const placeholder = document.getElementById('placeholder-title')
+    if (editorView) editorView.style.display = "flex"
+    if (editorView) placeholder.style.display = "none"
+
     document.querySelector('.detail-titulo').value = entrada.nombre
-    document.querySelector('.detail-contenido').value = entrada.contenido || ''
+    // document.querySelector('.detail-contenido').value = entrada.contenido || ''
+    textarea.value = entrada.contenido || ''
+    actualizarPreview();
+    editorContainer.classList.remove('editing')
+    
+    if (window.innerWidth <= 768) cerrarSidebar()
 }
 
 document.querySelector('.guardar').addEventListener('click', async () => {
@@ -185,5 +206,48 @@ document.querySelector('#btn-logout').addEventListener('click', async () => {
     await supabase.auth.signOut()
     window.location.href = '/login.html'
 })
+
+const textarea = document.querySelector('.detail-contenido');
+const preview = document.getElementById('preview');
+const editorContainer = document.querySelector('.editor-container')
+
+function actualizarPreview() {
+    preview.innerHTML = marked.parse(textarea.value)
+}
+
+// abrir editor
+preview.addEventListener('click', () => {
+    editorContainer.classList.add('editing')
+    textarea.focus()
+})
+
+// cerrar editor
+document.addEventListener('click', (e) => {
+    if (!editorContainer.contains(e.target)) {
+        editorContainer.classList.remove('editing')
+    }
+})
+
+textarea.addEventListener('input', actualizarPreview);
+
+const btnMenu = document.getElementById('btn-menu')
+const sidebar = document.querySelector('.card.tree')
+const overlay = document.getElementById('overlay')
+
+function abrirSidebar() {
+    sidebar.classList.add('open')
+    overlay.classList.add('visible')
+}
+
+function cerrarSidebar() {
+    sidebar.classList.remove('open')
+    overlay.classList.remove('visible')
+}
+
+btnMenu.addEventListener('click', () => {
+    sidebar.classList.contains('open') ? cerrarSidebar() : abrirSidebar()
+})
+
+overlay.addEventListener('click', cerrarSidebar)
 
 cargarArbol()
