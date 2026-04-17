@@ -1,0 +1,111 @@
+.tree ul {
+    padding-left: 16px;
+    margin: 0;
+    list-style: none;
+    text-align: start;
+}
+
+.tree > li {
+    padding: 0;
+    margin: 0;
+}
+
+.folder > ul {
+    display: none;
+}
+
+.folder.open > ul {
+    display: block;
+}
+
+.folder::before {
+    content: "▶";
+}
+
+.folder.open::before {
+    content: "▼";
+}
+
+.detail {
+    width: 100%;
+    max-width: 800px;
+}
+
+.detail-titulo {
+    background: none;
+    border: none;
+    outline: none;
+    font-size: 2rem;
+    font-weight: bold;
+    width: 100%;
+    box-shadow: none;
+}
+
+.detail-contenido {
+    background: none;
+    border: none;
+    outline: none;
+    resize: none;
+    width: 100%;
+    field-sizing: content;
+    box-shadow: none;
+    font-size: 1.1rem;
+}
+
+/* botones */
+
+button {
+    background: #2294ba;
+    color: white;
+    width: auto;
+    height: auto;
+    border: none;
+    padding: 5px 15px;
+    cursor: pointer;
+}
+
+.guardar {
+    border: none;
+    background: none;
+    color: white;
+}
+
+.añadir {
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+    padding: 0 5px;
+    font-size: 12px;
+}
+
+.item-contenedor {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.item-nombre {
+    flex-grow: 1;
+}
+
+.item-acciones {
+    display: none; /* Se ocultan por defecto */
+}
+
+.item-contenedor:hover .item-acciones {
+    display: flex; /* Aparecen al pasar el mouse */
+    gap: 5px;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px;
+    filter: grayscale(1);
+}

@@ -1,0 +1,22 @@
+@media (hover: hover) {
+    .folder:hover {
+        cursor: pointer; 
+    }
+
+    .tree li:not(.folder):hover,
+    .folder > span:hover {
+        background: #252627;
+    }
+
+    .guardar:hover {
+        cursor: pointer;
+    }
+
+    .btn-icon:hover {
+        filter: grayscale(0);
+    }
+
+    .btn-delete:hover {
+        color: #ff4d4d;
+    }
+}

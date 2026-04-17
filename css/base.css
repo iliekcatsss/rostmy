@@ -1,0 +1,78 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+body {
+    font-family: sans-serif;
+    background: #191a1b;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.content {
+    display: flex;
+    align-items: center;
+    padding-top: 80px;
+    width: 100%;
+    box-sizing: border-box;
+    flex: 1;
+    justify-content: center;
+    height: 100vh;
+    gap: 0;
+}
+
+h1 { text-align: center; }
+h2 { text-align: center; }
+h3 { text-align: center; }
+h4 { text-align: center; }
+
+label {
+    font-weight: bold;
+}
+
+input, select, textarea {
+    padding: 8px;
+    margin-top: 5px;
+    background: #191a1b;
+    color: white;
+    border-radius: 5px;
+    border: 1px solid #28292a;
+    box-sizing: border-box;
+    resize: none;
+}
+
+input:focus, select:focus, textarea:focus {
+    border: none;
+    outline: 1px solid #277893;
+    outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+    width: 1rem;
+}
+
+::-webkit-scrollbar-track {
+    background: none;
+    border-left: 1px solid #28292a;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #28292b;
+    cursor: default;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #3f4041;
+}

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zarcht</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <!-- <div id="navbar"></div> -->
+    <!-- <script src="js/navbar.js"></script> -->
+    <div class="content">
+        <div class="card tree">
+            <button id="btn-logout">Cerrar Sesión</button>
+            <aside class="sidebar">
+                <ul class="tree">
+                    <li class="folder">
+                        <span>Mi Historia</span>
+                        <ul>
+                            <li class="folder">
+                                <span>Personajes</span> <button class="añadir" onclick="nuevoItem('personajes')">+</button>
+                                <ul id="carpeta-personajes">
+                                    <li class="item">Ejemplo</li>
+                                </ul>
+                            </li>
+                            <li class="folder">
+                                <span>Lore</span> <button class="añadir" onclick="nuevoItem('lore')">+</button>
+                                <ul id="carpeta-lore">
+                                    <li class="item">Ejemplo</li>
+                                </ul>
+                            </li>
+                            <li class="folder">
+                                <span>Tramas</span> <button class="añadir" onclick="nuevoItem('tramas')">+</button>
+                                <ul id="carpeta-tramas">
+                                    <li class="item">Ejemplo</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </aside>
+        </div>
+        <div class="card">
+            <h1>Zarcht</h1>
+
+            <main class="detail">
+                <input class="detail-titulo" type="text" placeholder="Título...">
+                <textarea class="detail-contenido" placeholder="Escribe aquí..."></textarea>
+                <button class="guardar">Guardar</button>
+            </main>
+        </div>
+    </div>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
