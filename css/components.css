@@ -18,12 +18,42 @@
     display: block;
 }
 
-.folder::before {
-    content: "▶";
+.folder-nombre {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
 }
 
-.folder.open::before {
-    content: "▼";
+.folder-nombre::before {
+    content: "▶";
+    font-size: 10px;
+    margin-right: 8px;
+    display: inline-block;
+    width: 12px;
+}
+
+.folder.open > .folder-header .folder-nombre::before {
+    transform: rotate(90deg);
+    content: "▶"; 
+}
+
+.folder-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.folder-header .item-acciones {
+    display: none;
+}
+
+.folder-header:hover .item-acciones {
+    display: flex;
+    gap: 5px;
 }
 
 .detail {
@@ -94,6 +124,7 @@ button {
 
 .item-acciones {
     display: none; /* Se ocultan por defecto */
+    pointer-events: auto;
 }
 
 .item-contenedor:hover .item-acciones {

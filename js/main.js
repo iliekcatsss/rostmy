@@ -1,153 +1,189 @@
-console.log('main.js cargó')
-const { data: { user } } = await supabase.auth.getUser()
-console.log('usuario actual:', user.id)
-
 import { supabase } from './supabase.js'
 import './auth.js'
 
-// cargar datos y construir arbol
-async function cargarArbol() {
-    const { data: personajes, error: errorP } = await supabase.from('personajes').select('*');
-    const { data: lore, error: errorL } = await supabase.from('lore').select('*');
-    const { data: tramas, error: errorT } = await supabase.from('tramas').select('*');
+const { data: { user } } = await supabase.auth.getUser()
+console.log('usuario actual:', user.id)
 
-    if (errorP || errorL || errorT) {
-        console.error("Error cargando datos:", errorP || errorL || errorT);
-    }
-
-    llenarCarpeta('carpeta-personajes', personajes || [], 'personajes');
-    llenarCarpeta('carpeta-lore', lore || [], 'lore');
-    llenarCarpeta('carpeta-tramas', tramas || [], 'tramas');
-}
-
-function llenarCarpeta(id, items, tabla) {
-    const ul = document.getElementById(id)
-    ul.innerHTML = ''
-    items.forEach(item => {
-        const li = document.createElement('li')
-        li.classList.add('item-contenedor');
-
-        li.innerHTML = `
-            <span class="item-nombre">${item.nombre}</span>
-            <div class="item-acciones">
-                <button class="btn-icon" onclick="renombrarItem(event, ${item.id}, '${tabla}', '${item.nombre}')">✏️</button>
-                <button class="btn-icon btn-delete" onclick="eliminarItem(event, ${item.id}, '${tabla}')">🗑️</button>
-            </div>
-        `
-
-        li.querySelector('.item-nombre').addEventListener('click', () => abrirItem(item, tabla));
-        ul.appendChild(li);
-    })
-}
-
-//mostrar item en el detalle
 let itemActual = null
-let tablaActual = null
 
-function abrirItem(item, tabla) {
-    itemActual = item
-    tablaActual = tabla
-    document.querySelector('.detail-titulo').value = item.nombre
-    document.querySelector('.detail-contenido').value = item.contenido || ''
+// arbol
+
+async function cargarArbol() {
+    const { data: carpetas } = await supabase.from('carpetas').select('*')
+    const { data: entradas } = await supabase.from('entradas').select('*')
+
+    const raices = carpetas.filter(c => c.parent_id === null)
+    const contenedor = document.getElementById('arbol')
+    contenedor.innerHTML = ''
+
+    raices.forEach(carpeta => {
+        contenedor.appendChild(renderCarpeta(carpeta, carpetas, entradas))
+    })
+
+    // nueva carpeta raiz
+    const btnNueva = document.getElementById('btn-nueva-carpeta')
+    btnNueva.onclick = () => nuevaCarpeta(null)
 }
 
-// guardar cambios
-document.querySelector('.guardar').addEventListener('click', async () => {
-    if (!itemActual || !itemActual.id) {
-        console.error("No hay un item seleccionado o no tiene ID");
-        return;
+const carpetasAbiertas = new Set();
+
+function renderCarpeta(carpeta, todasCarpetas, todasEntradas) {
+    const li = document.createElement('li')
+    li.classList.add('folder');
+
+    if (carpetasAbiertas.has(carpeta.id)) {
+        li.classList.add('open');
     }
+
+    const hijos = todasCarpetas.filter(c => c.parent_id === carpeta.id)
+    const entradas = todasEntradas.filter(e => e.carpeta_id === carpeta.id)
+
+    li.innerHTML = `
+        <div class="folder-header">
+            <span class="folder-nombre">${carpeta.nombre}</span>
+            <div class="item-acciones">
+                <button class="btn-icon btn-nueva-sub" title="Nueva subcarpeta">📁</button>
+                <button class="btn-icon btn-nueva-entrada" title="Nueva entrada">📄</button>
+                <button class="btn-icon btn-rename" title="Renombrar">✏️</button>
+                <button class="btn-icon btn-delete" title="Eliminar carpeta">🗑️</button>
+            </div>
+        </div>
+        <ul></ul>
+    `
+
+    const header = li.querySelector('.folder-header');
+    header.onclick = (e) => {
+        if (e.target.tagName === 'BUTTON') return;
+        li.classList.toggle('open');
+
+        if (li.classList.contains('open')) {
+            carpetasAbiertas.add(carpeta.id);
+        } else {
+            carpetasAbiertas.delete(carpeta.id)
+        }
+    }
+
+    const ul = li.querySelector('ul')
+
+    // subcarpetas
+    hijos.forEach(hijo => {
+        ul.appendChild(renderCarpeta(hijo, todasCarpetas, todasEntradas))
+    })
+
+    // entradas
+    entradas.forEach(entrada => {
+        ul.appendChild(renderEntrada(entrada))
+    })
+
+    // eventos
+    li.querySelector('.folder-nombre').addEventListener('click', () => {
+        li.classList.toggle('open')
+    })
+    li.querySelector('.btn-nueva-sub').addEventListener('click', (e) => {
+        e.stopPropagation()
+        nuevaCarpeta(carpeta.id)
+    })
+    li.querySelector('.btn-nueva-entrada').addEventListener('click', (e) => {
+        e.stopPropagation()
+        nuevaEntrada(carpeta.id)
+    })
+    li.querySelector('.btn-rename').addEventListener('click', (e) => {
+        e.stopPropagation()
+        const nuevo = prompt('Nuevo nombre:', carpeta.nombre)
+        if (!nuevo || nuevo === carpeta.nombre) return
+        supabase.from('carpetas').update({ nombre: nuevo }).eq('id', carpeta.id).then(cargarArbol)
+    })
+    li.querySelector('.btn-delete').addEventListener('click', (e) => {
+        e.stopPropagation()
+        eliminarCarpeta(carpeta.id)
+    })
+
+    return li
+}
+
+function renderEntrada(entrada) {
+    const li = document.createElement('li')
+    li.classList.add('item-contenedor')
+    li.innerHTML = `
+        <span class="item-nombre">${entrada.nombre}</span>
+        <div class="item-acciones">
+            <button class="btn-icon btn-rename" title="Renombrar">✏️</button>
+            <button class="btn-icon btn-delete" title="Eliminar">🗑️</button>
+        </div>
+    `
+    li.querySelector('.item-nombre').addEventListener('click', () => abrirEntrada(entrada))
+    li.querySelector('.btn-rename').addEventListener('click', (e) => {
+        e.stopPropagation()
+        const nuevo = prompt('Nuevo nombre:', entrada.nombre)
+        if (!nuevo || nuevo === entrada.nombre) return
+        supabase.from('entradas').update({ nombre: nuevo }).eq('id', entrada.id).then(cargarArbol)
+    })
+    li.querySelector('.btn-delete').addEventListener('click', (e) => {
+        e.stopPropagation()
+        eliminarEntrada(entrada.id)
+    })
+    return li
+}
+
+// crud carpetas
+async function nuevaCarpeta(parentId) {
+    const nombre = prompt('Nombre de la carpeta:')
+    if (!nombre) return
+    await supabase.from('carpetas').insert({ nombre, parent_id: parentId })
+    await cargarArbol()
+}
+
+async function eliminarCarpeta(id) {
+    if (!confirm('¿Eliminar carpeta y todo su contenido?')) return
+    await supabase.from('entradas').delete().eq('carpeta_id', id)
+    await supabase.from('carpetas').delete().eq('id', id)
+    await cargarArbol()
+}
+
+// crud entradas
+async function nuevaEntrada(carpetaId) {
+    const nombre = prompt('Nombre de la entrada:')
+    if (!nombre) return
+    const { data } = await supabase
+        .from('entradas')
+        .insert({ nombre, contenido: '', carpeta_id: carpetaId })
+        .select()
+    await cargarArbol()
+    if (data?.[0]) abrirEntrada(data[0])
+}
+
+async function eliminarEntrada(id) {
+    if (!confirm('¿Eliminar esta entrada?')) return
+    await supabase.from('entradas').delete().eq('id', id)
+    if (itemActual?.id === id) {
+        itemActual = null
+        document.querySelector('.detail-titulo').value = ''
+        document.querySelector('.detail-contenido').value = ''
+    }
+    await cargarArbol()
+}
+
+// detalle
+function abrirEntrada(entrada) {
+    itemActual = entrada
+    document.querySelector('.detail-titulo').value = entrada.nombre
+    document.querySelector('.detail-contenido').value = entrada.contenido || ''
+}
+
+document.querySelector('.guardar').addEventListener('click', async () => {
+    if (!itemActual) return
     const nombre = document.querySelector('.detail-titulo').value
     const contenido = document.querySelector('.detail-contenido').value
-
-    const { error } = await supabase
-        .from(tablaActual)
-        .update({ nombre, contenido })
-        .eq('id', itemActual.id);
-
-    await supabase.from(tablaActual).update({ nombre, contenido}).eq('id', itemActual.id)
+    await supabase.from('entradas').update({ nombre, contenido }).eq('id', itemActual.id)
     itemActual.nombre = nombre
     itemActual.contenido = contenido
-    cargarArbol()
-})
-
-// crear nueva entrada
-window.nuevoItem = async (tabla) => {
-    const nuevoNombre = prompt(`Nombre de la nueva entrada:`);
-
-    if (!nuevoNombre) return 
-
-    const { data, error } = await supabase
-        .from(tabla)
-        .insert([{ nombre: nuevoNombre, contenido: '' }])
-        .select();
-
-    if (error) {
-        console.error("Error al crear:", error.message);
-        alert("No se pudo crear: " + error.message);
-    } else {
-        await cargarArbol();
-        if (data && data[0]) {
-            abrirItem(data[0], tabla);
-        }
-    }
-}
-
-// eliminar entrada
-window.eliminarItem = async (e, id, tabla) => {
-    e.stopPropagation();
-
-    const confirmar = confirm("¿Estás seguro de que quieres eliminar esta entrada?")
-    if (!confirmar) return;
-
-    const { error } = await supabase
-        .from(tabla)
-        .delete()
-        .eq('id', id);
-
-    if (error) {
-        console.error("Error al eliminar:", error.message);
-        alert("No se pudo eliminar: " + error.message);
-    } else {
-        if (itemActual && itemActual.id === id) {
-            itemActual = null;
-            document.querySelector('.detail-titulo').value = '';
-            document.querySelector('.detail-contenido').value = '';
-        }
-        await cargarArbol();
-    }
-};
-
-// renombrar entrada
-window.renombrarItem = async (e, id, tabla, nombreActual) => {
-    e.stopPropagation();
-
-    const nuevoNombre = prompt("Nuevo nombre:", nombreActual);
-    if (!nuevoNombre || nuevoNombre === nombreActual) return;
-
-    const { error } = await supabase
-        .from(tabla)
-        .update({ nombre: nuevoNombre })
-        .eq('id', id);
-
-    if (error) {
-        console.error("Error al renombrar:", error.message);
-    } else {
-        await cargarArbol();
-    }
-}
-
-cargarArbol()
-
-// abrir y cerrar folders
-document.querySelectorAll('.folder > span').forEach(folder => {
-    folder.addEventListener('click', () => {
-        folder.parentElement.classList.toggle('open')
-    })
+    await cargarArbol()
 })
 
 // cerrar sesion
 document.querySelector('#btn-logout').addEventListener('click', async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/login.html'; // te manda de vuelta al login
-});
+    await supabase.auth.signOut()
+    window.location.href = '/login.html'
+})
+
+cargarArbol()
