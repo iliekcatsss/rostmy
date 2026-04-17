@@ -12,6 +12,3 @@ Rostmy es un creador de notas, pensado para la eficiente gestión de archivos de
 - Organización por carpetas anidadas
 - Multi-usuario con datos separados
 - Accesible desde cualquier dispositivo
-
-# Bugs / sugerencias
-Abre un [issue](https://github.com/iliekcatsss/rostmy/issues) en el repo.
