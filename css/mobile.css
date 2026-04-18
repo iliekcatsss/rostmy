@@ -40,4 +40,9 @@
     .overlay.visible {
         display: block;
     }
+
+    .editor-container.editing {
+        grid-template-columns: none;
+        grid-template-rows: 1fr 1fr;
+    }
 }
