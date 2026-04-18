@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabase } from './supabase.js'
 
 document.querySelector('#btn-register').addEventListener('click', async () => {
     const email = document.querySelector('#email').value
