@@ -1,4 +1,8 @@
 @media (max-width: 768px) {
+    a {
+        text-decoration: underline;
+    }
+
     .content {
         padding-top: 0;
     }
