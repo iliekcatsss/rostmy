@@ -23,6 +23,7 @@
 
     .card:not(.tree) {
         width: 100%;
+        padding-bottom: 60px;
     }
 
     #btn-menu {
@@ -44,5 +45,22 @@
     .editor-container.editing {
         grid-template-columns: none;
         grid-template-rows: 1fr 1fr;
+    }
+
+    .guardar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 14px;
+        background: #2294ba;
+        text-align: center;
+        z-index: 50;
+    }
+
+    .item-acciones,
+    .folder-header .item-acciones {
+        display: flex;
+        gap: 5px;
     }
 }
