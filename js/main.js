@@ -227,8 +227,28 @@ const textarea = document.querySelector('.detail-contenido');
 const preview = document.getElementById('preview');
 const editorContainer = document.querySelector('.editor-container')
 
-function actualizarPreview() {
-    preview.innerHTML = marked.parse(textarea.value)
+function procesarLinks(texto, todasEntradas) {
+    return texto.replace(/\[\[(.+?)\]\]/g, (match, nombre) => {
+        const entrada = todasEntradas.find(e => e.nombre.toLowerCase() === nombre.toLowerCase())
+        if (entrada) {
+            return `<a href="#" class="wiki-link" data-id="${entrada.id}">${nombre}</a>`
+        }
+        return `<span class="wiki-link-roto">${nombre}</span>` // no existe
+    })
+}
+
+async function actualizarPreview() {
+    const { data: entradas } = await supabase.from('entradas').select('*')
+    const procesado = procesarLinks(textarea.value, entradas)
+    preview.innerHTML = marked.parse(procesado)
+
+    preview.querySelectorAll('.wiki-link').forEach(link => {
+        link.addEventListener('click', async (e) => {
+            e.preventDefault()
+            const { data } = await supabase.from('entradas').select('*').eq('id', link.dataset.id).single()
+            if (data) abrirEntrada(data)
+        })
+    })
 }
 
 // abrir editor

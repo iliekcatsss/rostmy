@@ -3,6 +3,15 @@ a {
     text-decoration: none;
 }
 
+.wiki-link {
+    color: #2294ba;
+    text-decoration: none;
+}
+.wiki-link-roto {
+    color: #888;
+    text-decoration: line-through;
+}
+
 @media (hover: hover) {
     a:hover {
         text-decoration: underline;
