@@ -170,12 +170,24 @@ async function eliminarCarpetaRecursivo(id) {
 async function nuevaEntrada(carpetaId) {
     const nombre = prompt('Nombre de la entrada:')
     if (!nombre) return
+    if (await nombreDuplicado(nombre)) {
+        alert('Ya existe una entrada con ese nombre')
+        return
+    }
     const { data } = await supabase
         .from('entradas')
         .insert({ nombre, contenido: '', carpeta_id: carpetaId })
         .select()
     await cargarArbol()
     if (data?.[0]) abrirEntrada(data[0])
+}
+
+async function nombreDuplicado(nombre, carpetaId) {
+    const { data } = await supabase
+        .from('entradas')
+        .select('id')
+        .eq('nombre', nombre)
+    return data && data.length > 0
 }
 
 async function eliminarEntrada(id) {
