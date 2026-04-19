@@ -23,6 +23,10 @@
     display: flex;
     align-items: center;
     pointer-events: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 .folder-nombre::before {
@@ -45,6 +49,8 @@
     padding: 5px 10px;
     cursor: pointer;
     user-select: none;
+    overflow: hidden;
+    gap: 4px;
 }
 
 .folder-header .item-acciones {
@@ -121,11 +127,16 @@ button {
 
 .item-nombre {
     flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 .item-acciones {
     display: none; /* Se ocultan por defecto */
     pointer-events: auto;
+    flex-shrink: 0;
 }
 
 .item-contenedor:hover .item-acciones {
@@ -195,4 +206,43 @@ button {
     padding: 20px;
     height: 70vh;
     overflow-y: auto;
+}
+
+/* modal */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-contenido {
+    background: #1e1e1e;
+    border: 1px solid #28292a;
+    border-radius: 8px;
+    padding: 20px;
+    min-width: 250px;
+    min-height: 60vh;
+    overflow-y: auto;
+    color: white;
+}
+
+.modal-contenido ul {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+}
+
+
+.modal-contenido li {
+    padding: 8px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.modal-contenido li:hover {
+    background: #252627;
 }

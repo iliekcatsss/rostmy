@@ -45,6 +45,7 @@ function renderCarpeta(carpeta, todasCarpetas, todasEntradas) {
                 <button class="btn-icon btn-nueva-sub" title="Nueva subcarpeta">📁</button>
                 <button class="btn-icon btn-nueva-entrada" title="Nueva entrada">📄</button>
                 <button class="btn-icon btn-rename" title="Renombrar">✏️</button>
+                <button class="btn-icon btn-mover" title="Mover">📦</button>
                 <button class="btn-icon btn-delete" title="Eliminar carpeta">🗑️</button>
             </div>
         </div>
@@ -93,6 +94,13 @@ function renderCarpeta(carpeta, todasCarpetas, todasEntradas) {
         if (!nuevo || nuevo === carpeta.nombre) return
         supabase.from('carpetas').update({ nombre: nuevo }).eq('id', carpeta.id).then(cargarArbol)
     })
+    li.querySelector('.btn-mover').addEventListener('click', (e) => {
+        e.stopPropagation()
+        mostrarModalMover(async (nuevoParentId) => {
+            await supabase.from('carpetas').update({ parent_id: nuevoParentId }).eq('id', carpeta.id)
+            await cargarArbol()
+        })
+    })
     li.querySelector('.btn-delete').addEventListener('click', (e) => {
         e.stopPropagation()
         eliminarCarpeta(carpeta.id)
@@ -108,6 +116,7 @@ function renderEntrada(entrada) {
         <span class="item-nombre">${entrada.nombre}</span>
         <div class="item-acciones">
             <button class="btn-icon btn-rename" title="Renombrar">✏️</button>
+            <button class="btn-icon btn-mover" title="Mover">📦</button>
             <button class="btn-icon btn-delete" title="Eliminar">🗑️</button>
         </div>
     `
@@ -117,6 +126,13 @@ function renderEntrada(entrada) {
         const nuevo = prompt('Nuevo nombre:', entrada.nombre)
         if (!nuevo || nuevo === entrada.nombre) return
         supabase.from('entradas').update({ nombre: nuevo }).eq('id', entrada.id).then(cargarArbol)
+    })
+    li.querySelector('.btn-mover').addEventListener('click', (e) => {
+        e.stopPropagation()
+        mostrarModalMover(async (nuevaCarpetaId) => {
+            await supabase.from('entradas').update({ carpeta_id: nuevaCarpetaId }).eq('id', entrada.id)
+            await cargarArbol()
+        }, false)
     })
     li.querySelector('.btn-delete').addEventListener('click', (e) => {
         e.stopPropagation()
@@ -251,3 +267,41 @@ btnMenu.addEventListener('click', () => {
 overlay.addEventListener('click', cerrarSidebar)
 
 cargarArbol()
+
+function mostrarModalMover(callback, mostrarRaiz = true) {
+    const modal = document.getElementById('modal-mover')
+    const lista = document.getElementById('modal-lista')
+    lista.innerHTML = ''
+
+    // opción raíz
+    if (mostrarRaiz) {
+        const root = document.createElement('li')
+        root.textContent = '/ (raíz)'
+        root.addEventListener('click', () => {
+            cerrarModal()
+            callback(null)
+        })
+        lista.appendChild(root)
+    }
+
+    // todas las carpetas
+    supabase.from('carpetas').select('*').then(({ data }) => {
+        data.forEach(c => {
+            const li = document.createElement('li')
+            li.textContent = c.nombre
+            li.addEventListener('click', () => {
+                cerrarModal()
+                callback(c.id)
+            })
+            lista.appendChild(li)
+        })
+    })
+
+    modal.style.display = 'flex'
+}
+
+function cerrarModal() {
+    document.getElementById('modal-mover').style.display = 'none'
+}
+
+document.getElementById('modal-cancelar').addEventListener('click', cerrarModal)
