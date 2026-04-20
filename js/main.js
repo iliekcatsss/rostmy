@@ -236,6 +236,11 @@ function abrirEntrada(entrada) {
 }
 
 function cambiarTab(tab) {
+    if (tabActiva && tabActiva !== tab) {
+        tabActiva.entrada.contenido = textarea.value
+        tabActiva.entrada.nombre = document.querySelector('.detail-titulo').value
+    }
+    
     tabActiva = tab
 
     const editorView = document.getElementById('editor-view')
