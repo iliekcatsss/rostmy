@@ -240,12 +240,16 @@ const preview = document.getElementById('preview');
 const editorContainer = document.querySelector('.editor-container')
 
 function procesarLinks(texto, todasEntradas) {
-    return texto.replace(/\[\[(.+?)\]\]/g, (match, nombre) => {
-        const entrada = todasEntradas.find(e => e.nombre.toLowerCase() === nombre.toLowerCase())
+    return texto.replace(/\[\[(.+?)\]\]/g, (match, contenido) => {
+        const partes = contenido.split('|').map(s => s.trim())
+        const texto = partes[0] || partes[1] || nombreBusqueda
+        const nombreBusqueda = partes[1] || partes[0]
+
+        const entrada = todasEntradas.find(e => e.nombre === nombreBusqueda)
         if (entrada) {
-            return `<a href="#" class="wiki-link" data-id="${entrada.id}">${nombre}</a>`
+            return `<a href="#" class="wiki-link" data-id="${entrada.id}">${texto}</a>`
         }
-        return `<span class="wiki-link-roto">${nombre}</span>` // no existe
+        return `<span class="wiki-link-roto">${texto}</span>` // no existe
     })
 }
 
