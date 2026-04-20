@@ -231,8 +231,8 @@ function abrirEntrada(entrada) {
 
 function cambiarTab(tab) {
     if (tabActiva && tabActiva !== tab) {
-        tabActiva.entrada.contenido = textarea.value
-        tabActiva.entrada.nombre = document.querySelector('.detail-titulo').value
+        tabActiva.draft = textarea.value
+        tabActiva.draftNombre = document.querySelector('.detail-titulo').value
     }
 
     tabActiva = tab
@@ -242,8 +242,8 @@ function cambiarTab(tab) {
     editorView.style.display = 'flex'
     placeholder.style.display = 'none'
 
-    document.querySelector('.detail-titulo').value = tab.entrada.nombre
-    textarea.value = tab.entrada.contenido || ''
+    document.querySelector('.detail-titulo').value = tab.draftNombre ?? tab.entrada.nombre
+    textarea.value = tab.draft ?? tab.entrada.contenido ?? ''
     actualizarPreview()
     renderTabs()
 }
@@ -320,10 +320,12 @@ document.addEventListener('click', () => dropdown.classList.remove('visible'))
 document.querySelector('.guardar').addEventListener('click', async () => {
     if (!tabActiva) return
     const nombre = document.querySelector('.detail-titulo').value
-    const contenido = document.querySelector('.detail-contenido').value
+    const contenido = textarea.value
     await supabase.from('entradas').update({ nombre, contenido }).eq('id', tabActiva.entrada.id)
     tabActiva.entrada.nombre = nombre
     tabActiva.entrada.contenido = contenido
+    tabActiva.draft = null
+    tabActiva.draftNombre = null
     tabActiva.unsaved = false
     renderTabs()
     await cargarArbol()
