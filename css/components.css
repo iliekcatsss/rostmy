@@ -168,6 +168,14 @@ button {
     cursor: pointer;
 }
 
+#btn-tabs {
+    display: none;
+    position:fixed;
+    top:8px;
+    right:8px;
+    z-index:101;
+}
+
 .editor-header {
     display: flex;
     justify-content: space-between;
@@ -245,4 +253,76 @@ button {
 
 .modal-contenido li:hover {
     background: #252627;
+}
+
+/* pestañas */
+#tabs-bar {
+    display: flex;
+    border-bottom: 1px solid #29292a;
+    min-height: 36px;
+    flex-shrink: 0;
+    justify-content: flex-start;
+    align-self: stretch;
+    overflow-x: auto;
+    overflow-y: visible;
+    min-width: 0;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 14px;
+    height: 36px;
+    cursor: pointer;
+    white-space: nowrap;
+    border-right: 1px solid #28292a;
+    color: #888;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.tab:hover {
+    background: #1a1a1b;
+    color: #ccc;
+}
+
+.tab.activa {
+    color: white;
+    background: #121314;
+    border-top: 2px solid #2294ba;
+}
+
+.tab .punto {
+    display: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #2294ba;
+    flex-shrink: 0;
+}
+
+.tab.sin-guardar .punto {
+    display: block;
+}
+
+.tab .cerrar {
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    padding: 0 2px;
+    font-size: 16px;
+    line-height: 1;
+    border-radius: 3px;
+}
+
+.tab .cerrar:hover {
+    color: white;
+    background: #333;
+}
+
+#tabs-dropdown {
+    display: none;
 }

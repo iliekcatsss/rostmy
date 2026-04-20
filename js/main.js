@@ -193,47 +193,140 @@ async function nombreDuplicado(nombre, carpetaId) {
 async function eliminarEntrada(id) {
     if (!confirm('¿Eliminar esta entrada?')) return
     await supabase.from('entradas').delete().eq('id', id)
-    if (itemActual?.id === id) {
-        itemActual = null
-        document.querySelector('.detail-titulo').value = ''
-        document.querySelector('.detail-contenido').value = ''
+
+    const tabAEliminar = tabs.find(t => t.entrada.id === id)
+    if (tabAEliminar) {
+        tabs = tabs.filter(t => t !== tabAEliminar)
+        if (tabActiva === tabAEliminar) {
+            if (tabs.length > 0) {
+                cambiarTab(tabs[tabs.length - 1])
+            } else {
+                document.getElementById('editor-view').style.display = 'none'
+                document.getElementById('placeholder-title').style.display = 'block'
+            }
+        }
+        renderTabs()
     }
     await cargarArbol()
 }
 
+let tabs = []
+let tabActiva = null
 // detalle
 function abrirEntrada(entrada) {
-    if (unsaved) {
+    document.querySelector('.markdown-body').scrollTo({ top: 0, behavior: 'smooth' })
+
+    // si ya está abierta cambiar a ella
+    const existente = tabs.find(p => p.entrada.id === entrada.id)
+    if (existente) {
+        cambiarTab(existente)
+        return
+    }
+
+    // verificar unsaved
+    if (tabActiva?.unsaved) {
         const confirmar = confirm('Tienes cambios sin guardar. ¿Salir de todas formas?')
         if (!confirmar) return
     }
-    unsaved = false
-    
-    itemActual = entrada
+
+    const tab = { entrada, unsaved: false }
+    tabs.push(tab)
+    cambiarTab(tab)
+    renderTabs()
+}
+
+function cambiarTab(tab) {
+    tabActiva = tab
 
     const editorView = document.getElementById('editor-view')
     const placeholder = document.getElementById('placeholder-title')
-    if (editorView) editorView.style.display = "flex"
-    if (editorView) placeholder.style.display = "none"
+    editorView.style.display = 'flex'
+    placeholder.style.display = 'none'
 
-    document.querySelector('.detail-titulo').value = entrada.nombre
-    // document.querySelector('.detail-contenido').value = entrada.contenido || ''
-    textarea.value = entrada.contenido || ''
-    actualizarPreview();
-    editorContainer.classList.remove('editing')
-    document.querySelector('.markdown-body').scrollTo({ top: 0, behavior: 'smooth' }) // te manda arriba (creo)
-    
-    if (window.innerWidth <= 768) cerrarSidebar()
+    document.querySelector('.detail-titulo').value = tab.entrada.nombre
+    textarea.value = tab.entrada.contenido || ''
+    actualizarPreview()
+    renderTabs()
 }
 
+function cerrarTab(tab, e) {
+    e.stopPropagation()
+    if (tab.unsaved) {
+        const confirmar = confirm('Tienes cambios sin guardar. ¿Salir de todas formas?')
+        if (!confirmar) return
+    }
+
+    tabs = tabs.filter(p => p !== tab)
+
+    if (tabActiva === tab) {
+        if (tabs.length > 0) {
+            cambiarTab(tabs[tabs.length -1])            
+        } else {
+            tabActiva = null
+            document.getElementById('editor-view').style.display = 'none'
+            document.getElementById('placeholder-title').style.display = 'block'
+        }
+    }
+    renderTabs()
+}
+
+function renderTabs() {
+    const bar = document.getElementById('tabs-bar')
+    bar.innerHTML = ''
+    tabs.forEach(tab => {
+        const div = document.createElement('div')
+        div.classList.add('tab')
+        if (tab === tabActiva) div.classList.add('activa')
+        if (tab.unsaved) div.classList.add('sin-guardar')
+
+        div.innerHTML = `
+            <span class="punto"></span>
+            <span>${tab.entrada.nombre}</span>
+            <button class="cerrar">×</button>
+        `
+        div.addEventListener('click', () => cambiarTab(tab))
+        div.querySelector('.cerrar').addEventListener('click', (e) => cerrarTab(tab, e))
+        bar.appendChild(div)
+    })
+
+    // móvil
+    const count = document.getElementById('tabs-count')
+    const dropdown = document.getElementById('tabs-dropdown')
+    if (count) count.textContent = tabs.length
+
+    dropdown.innerHTML = ''
+    tabs.forEach(tab => {
+        const div = document.createElement('div')
+        div.classList.add('tab-item')
+        if (tab === tabActiva) div.classList.add('active')
+        div.innerHTML = `
+            <span>${tab.entrada.nombre}${tab.unsaved ? ' ●' : ''}</span>
+            <button class="cerrar" style="background:none;border:none;color:#888;cursor:pointer;"×</button>
+        `
+        div.addEventListener('click', () => { cambiarTab(tab); dropdown.classList.remove('visible') })
+        div.querySelector('.cerrar').addEventListener('click', (e) => cerrarTab(tab, e))
+        dropdown.appendChild(div)
+    })
+}
+const btnTabs = document.getElementById('btn-tabs')
+const dropdown = document.getElementById('tabs-dropdown')
+
+btnTabs?.addEventListener('click', (e) => {
+    e.stopPropagation()
+    dropdown.classList.toggle('visible')
+})
+
+document.addEventListener('click', () => dropdown.classList.remove('visible'))
+
 document.querySelector('.guardar').addEventListener('click', async () => {
-    if (!itemActual) return
+    if (!tabActiva) return
     const nombre = document.querySelector('.detail-titulo').value
     const contenido = document.querySelector('.detail-contenido').value
-    await supabase.from('entradas').update({ nombre, contenido }).eq('id', itemActual.id)
-    unsaved = false
-    itemActual.nombre = nombre
-    itemActual.contenido = contenido
+    await supabase.from('entradas').update({ nombre, contenido }).eq('id', tabActiva.entrada.id)
+    tabActiva.entrada.nombre = nombre
+    tabActiva.entrada.contenido = contenido
+    tabActiva.unsaved = false
+    renderTabs()
     await cargarArbol()
 })
 
@@ -350,24 +443,27 @@ function cerrarModal() {
 
 document.getElementById('modal-cancelar').addEventListener('click', cerrarModal)
 
-document.getElementById('arriba').addEventListener('click', function() {
-    document.querySelector('.markdown-body').scrollTo({ top: 0, behavior: 'smooth' })
-})
-
 // evitar salir si hay cambios sin guardar
 let unsaved = false
 
 window.addEventListener('beforeunload', (event) => {
-    if (unsaved) {
+    if (tabs.some(p => p.unsaved)) {
         event.preventDefault()
         event.returnValue = ''
     }
 })
 
 textarea.addEventListener('input', () => {
-    unsaved = true
+    if (tabActiva) {
+        tabActiva.unsaved = true
+        renderTabs()
+    }
+    actualizarPreview()
 })
 
 document.querySelector('.detail-titulo').addEventListener('input', () => {
-    unsaved = true    
+    if (tabActiva) {
+        tabActiva.unsaved = true
+        renderTabs()
+    }
 })
