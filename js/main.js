@@ -222,13 +222,7 @@ function abrirEntrada(entrada) {
         cambiarTab(existente)
         return
     }
-
-    // verificar unsaved
-    if (tabActiva?.unsaved) {
-        const confirmar = confirm('Tienes cambios sin guardar. ¿Salir de todas formas?')
-        if (!confirmar) return
-    }
-
+    
     const tab = { entrada, unsaved: false }
     tabs.push(tab)
     cambiarTab(tab)
@@ -240,7 +234,7 @@ function cambiarTab(tab) {
         tabActiva.entrada.contenido = textarea.value
         tabActiva.entrada.nombre = document.querySelector('.detail-titulo').value
     }
-    
+
     tabActiva = tab
 
     const editorView = document.getElementById('editor-view')
