@@ -203,6 +203,12 @@ async function eliminarEntrada(id) {
 
 // detalle
 function abrirEntrada(entrada) {
+    if (unsaved) {
+        const confirmar = confirm('Tienes cambios sin guardar. ¿Salir de todas formas?')
+        if (!confirmar) return
+    }
+    unsaved = false
+    
     itemActual = entrada
 
     const editorView = document.getElementById('editor-view')
@@ -215,6 +221,7 @@ function abrirEntrada(entrada) {
     textarea.value = entrada.contenido || ''
     actualizarPreview();
     editorContainer.classList.remove('editing')
+    document.querySelector('.markdown-body').scrollTo({ top: 0, behavior: 'smooth' }) // te manda arriba (creo)
     
     if (window.innerWidth <= 768) cerrarSidebar()
 }
@@ -224,6 +231,7 @@ document.querySelector('.guardar').addEventListener('click', async () => {
     const nombre = document.querySelector('.detail-titulo').value
     const contenido = document.querySelector('.detail-contenido').value
     await supabase.from('entradas').update({ nombre, contenido }).eq('id', itemActual.id)
+    unsaved = false
     itemActual.nombre = nombre
     itemActual.contenido = contenido
     await cargarArbol()
@@ -341,3 +349,25 @@ function cerrarModal() {
 }
 
 document.getElementById('modal-cancelar').addEventListener('click', cerrarModal)
+
+document.getElementById('arriba').addEventListener('click', function() {
+    document.querySelector('.markdown-body').scrollTo({ top: 0, behavior: 'smooth' })
+})
+
+// evitar salir si hay cambios sin guardar
+let unsaved = false
+
+window.addEventListener('beforeunload', (event) => {
+    if (unsaved) {
+        event.preventDefault()
+        event.returnValue = ''
+    }
+})
+
+textarea.addEventListener('input', () => {
+    unsaved = true
+})
+
+document.querySelector('.detail-titulo').addEventListener('input', () => {
+    unsaved = true    
+})
