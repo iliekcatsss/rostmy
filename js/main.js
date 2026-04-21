@@ -5,8 +5,12 @@ const { data: { user } } = await supabase.auth.getUser()
 console.log('usuario actual:', user.id)
 
 let itemActual = null
+let entradasCache = []
 
 // arbol
+
+await refrescarCache()
+cargarArbol()
 
 async function cargarArbol() {
     const { data: carpetas } = await supabase.from('carpetas').select('*')
@@ -178,6 +182,7 @@ async function nuevaEntrada(carpetaId) {
         .from('entradas')
         .insert({ nombre, contenido: '', carpeta_id: carpetaId })
         .select()
+    await refrescarCache()
     await cargarArbol()
     if (data?.[0]) abrirEntrada(data[0])
 }
@@ -212,6 +217,8 @@ async function eliminarEntrada(id) {
 
 let tabs = []
 let tabActiva = null
+let dragTab = null
+let dragOverTab = null
 // detalle
 function abrirEntrada(entrada) {
     document.querySelector('.markdown-body').scrollTo({ top: 0, behavior: 'smooth' })
@@ -269,6 +276,18 @@ function cerrarTab(tab, e) {
     renderTabs()
 }
 
+document.addEventListener('dragend', () => {
+    dragTab = null
+    if (dragOverTab) {
+        dragOverTab.classList.remove('drag-over')
+        dragOverTab = null
+    }
+    document.querySelectorAll('.tab').forEach(t => {
+        t.classList.remove('dragging')
+        t.classList.remove('drag-over')
+    })
+})
+
 function renderTabs() {
     const bar = document.getElementById('tabs-bar')
     bar.innerHTML = ''
@@ -283,6 +302,34 @@ function renderTabs() {
             <span>${tab.entrada.nombre}</span>
             <button class="cerrar">×</button>
         `
+
+        // tabs arrastrables
+        div.draggable = true
+
+        div.addEventListener('dragstart', () => {
+            dragTab = tab
+            div.classList.add('dragging')
+        })
+
+        div.addEventListener('dragover', (e) => {
+            e.preventDefault()
+            if (!dragTab || dragTab === tab) return
+            if (dragOverTab === div) return
+            if (dragOverTab) dragOverTab.classList.remove('drag-over')
+            dragOverTab = div
+            div.classList.add('drag-over')
+        })
+
+        div.addEventListener('drop', (e) => {
+            e.preventDefault()
+            if (!dragTab || dragTab === tab) return
+            const fromIndex = tabs.indexOf(dragTab)
+            const toIndex = tabs.indexOf(tab)
+            tabs.splice(fromIndex, 1)
+            tabs.splice(toIndex, 0, dragTab)
+            renderTabs()
+        })
+
         div.addEventListener('click', () => cambiarTab(tab))
         div.querySelector('.cerrar').addEventListener('click', (e) => cerrarTab(tab, e))
         bar.appendChild(div)
@@ -322,6 +369,7 @@ document.querySelector('.guardar').addEventListener('click', async () => {
     const nombre = document.querySelector('.detail-titulo').value
     const contenido = textarea.value
     await supabase.from('entradas').update({ nombre, contenido }).eq('id', tabActiva.entrada.id)
+    await refrescarCache()
     tabActiva.entrada.nombre = nombre
     tabActiva.entrada.contenido = contenido
     tabActiva.draft = null
@@ -355,16 +403,20 @@ function procesarLinks(texto, todasEntradas) {
     })
 }
 
-async function actualizarPreview() {
-    const { data: entradas } = await supabase.from('entradas').select('*')
-    const procesado = procesarLinks(textarea.value, entradas)
+async function refrescarCache(params) {
+    const { data } = await supabase.from('entradas').select('*')
+    entradasCache = data || []
+}
+
+function actualizarPreview() {
+    const procesado = procesarLinks(textarea.value, entradasCache)
     preview.innerHTML = marked.parse(procesado)
 
     preview.querySelectorAll('.wiki-link').forEach(link => {
         link.addEventListener('click', async (e) => {
             e.preventDefault()
-            const { data } = await supabase.from('entradas').select('*').eq('id', link.dataset.id).single()
-            if (data) abrirEntrada(data)
+            const entrada = entradasCache.find(e => e.id == link.dataset.id)
+            if (entrada) abrirEntrada(entrada)
         })
     })
 }
@@ -381,8 +433,6 @@ document.addEventListener('click', (e) => {
         editorContainer.classList.remove('editing')
     }
 })
-
-textarea.addEventListener('input', actualizarPreview);
 
 const btnMenu = document.getElementById('btn-menu')
 const sidebar = document.querySelector('.card.tree')
@@ -457,7 +507,7 @@ window.addEventListener('beforeunload', (event) => {
 textarea.addEventListener('input', () => {
     if (tabActiva) {
         tabActiva.unsaved = true
-        renderTabs()
+        document.querySelector('.tab.activa')?.classList.add('sin-guardar')
     }
     actualizarPreview()
 })
