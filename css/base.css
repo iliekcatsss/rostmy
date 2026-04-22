@@ -24,13 +24,22 @@ body {
 .content {
     display: flex;
     align-items: center;
-    padding-top: 80px;
+    /* padding-top: 80px; */
     width: 100%;
     box-sizing: border-box;
     flex: 1;
     justify-content: center;
     height: 100vh;
     gap: 0;
+}
+
+.content-right {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+    overflow: hidden;
+    min-width: 0;
 }
 
 label {

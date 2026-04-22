@@ -20,13 +20,15 @@
     padding: 20px;
     box-sizing: border-box;
     flex-shrink: 0;
+    border: 1px solid #28292a;
+    border-right: none;
 }
 
 .card:not(.tree) {
     flex-grow: 1;
     height: 100%;
     overflow-y: auto;
-    padding: 40px;
+    /* padding: 40px; */
     background: #121314;
     display: flex;
     flex-direction: column;
@@ -38,4 +40,9 @@
 .sidebar {
     width: 100%;
     margin-top: 0;
+}
+
+.content-right .card {
+    flex: 1;
+    overflow-y: auto;
 }

@@ -64,7 +64,7 @@
 
 .detail {
     width: 100%;
-    max-width: 1200px;
+    /* max-width: 1200px; */
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -258,7 +258,6 @@ button {
 /* pestañas */
 #tabs-bar {
     display: flex;
-    border-bottom: 1px solid #29292a;
     min-height: 36px;
     flex-shrink: 0;
     justify-content: flex-start;
@@ -276,7 +275,8 @@ button {
     height: 36px;
     cursor: pointer;
     white-space: nowrap;
-    border-right: 1px solid #28292a;
+    border: 1px solid #28292a;
+    border-bottom: none;
     color: #888;
     font-size: 0.85rem;
     flex-shrink: 0;
@@ -284,14 +284,14 @@ button {
 }
 
 .tab:hover {
-    background: #1a1a1b;
+    background: #121314;
     color: #ccc;
 }
 
 .tab.activa {
     color: white;
     background: #121314;
-    border-top: 2px solid #2294ba;
+    border-top: 1px solid #2294ba;
 }
 
 .tab .punto {
