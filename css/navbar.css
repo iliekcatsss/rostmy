@@ -1,0 +1,39 @@
+#navbar {
+    background: #191a1b;
+    border-bottom: 1px solid #28292a;
+    padding: 12px 20px;
+    padding-top: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-bar {
+    flex: 1;
+    max-width: 400px;
+    padding: 8px 12px;
+    background: #1e1e1e;
+    border: 1px solid #28292a;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    outline: none;
+    min-width: 200px;
+}
+
+.search-bar::placeholder {
+    color: #666;
+}
+
+.search-results {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #28292a;
+    border-radius: 4px;
+    background: #1a1a1b;
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    width: calc(100% - 40px);
+    z-index: 100;
+}

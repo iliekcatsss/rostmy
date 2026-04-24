@@ -8,12 +8,15 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-    <!-- <div id="navbar"></div> -->
-    <!-- <script src="js/navbar.js"></script> -->
+    <!-- <div id="navbar" class="navbar">
+        <input type="text" id="search-input" placeholder="Buscar..." class="search-bar">
+        <div id="search-results" class="search-results" style="display:none;"></div>
+    </div> -->
     <button id="btn-menu">☰</button>
     <div class="overlay" id="overlay"></div>
     <button id="btn-tabs">⬜ <span id="tabs-count">0</span></button>
     <div id="tabs-dropdown" class="tabs-dropdown"></div>
+    
     <div class="content">
         <div class="card tree">
             <button id="btn-logout">Cerrar Sesión</button>
@@ -26,6 +29,7 @@
             <div id="tabs-bar"></div>
             <div class="card">
                 <h1 id="placeholder-title">Rostmy</h1>
+                <p id="placeholder-content">Esta es una app en desarrollo. Si encuentras un bug o tienes una sugerencia, abre un <a href="https://github.com/iliekcatsss/rostmy/issues">issue</a> o envía un <a href="mailto:iliekcatsss@proton.me">correo</a></p>
                 
                 <main class="detail" id="editor-view" style="display: none;">
                     <input class="detail-titulo" type="text" placeholder="Título...">

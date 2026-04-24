@@ -208,6 +208,7 @@ async function eliminarEntrada(id) {
             } else {
                 document.getElementById('editor-view').style.display = 'none'
                 document.getElementById('placeholder-title').style.display = 'block'
+                document.getElementById('placeholder-content').style.display = 'block'
             }
         }
         renderTabs()
@@ -245,9 +246,11 @@ function cambiarTab(tab) {
     tabActiva = tab
 
     const editorView = document.getElementById('editor-view')
-    const placeholder = document.getElementById('placeholder-title')
+    const placeholderTitle = document.getElementById('placeholder-title')
+    const placeholderContent = document.getElementById('placeholder-content')
     editorView.style.display = 'flex'
-    placeholder.style.display = 'none'
+    placeholderTitle.style.display = 'none'
+    placeholderContent.style.display = 'none'
 
     document.querySelector('.detail-titulo').value = tab.draftNombre ?? tab.entrada.nombre
     textarea.value = tab.draft ?? tab.entrada.contenido ?? ''
@@ -271,6 +274,7 @@ function cerrarTab(tab, e) {
             tabActiva = null
             document.getElementById('editor-view').style.display = 'none'
             document.getElementById('placeholder-title').style.display = 'block'
+            document.getElementById('placeholder-content').style.display = 'block'
         }
     }
     renderTabs()

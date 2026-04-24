@@ -108,4 +108,8 @@
     #tabs-dropdown .tab-item.activa {
         color: white
     }
+
+    .btn-icon {
+        filter: grayscale(0);
+    }
 }
