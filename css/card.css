@@ -20,8 +20,9 @@
     padding: 20px;
     box-sizing: border-box;
     flex-shrink: 0;
-    border: 1px solid #28292a;
+    /* border: 1px solid #28292a; */
     border-right: none;
+    margin-top: 2rem;
 }
 
 .card:not(.tree) {

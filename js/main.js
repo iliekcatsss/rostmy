@@ -522,3 +522,48 @@ document.querySelector('.detail-titulo').addEventListener('input', () => {
         renderTabs()
     }
 })
+
+// searchbar
+const searchInput = document.getElementById('search-input')
+const searchResults = document.getElementById('search-results')
+
+searchInput.addEventListener('input', async (e) => {
+    const query = e.target.value.trim()
+    if (!query) {
+        searchResults.style.display = 'none'
+        return
+    }
+
+    const { data: entradas } = await supabase
+        .from('entradas')
+        .select('*')
+        .ilike('nombre', `%${query}%`)
+        .limit(5)
+
+    searchResults.innerHTML = ''
+    if (entradas.length === 0) {
+        searchResults.innerHTML = '<div class="search-result-item">No encontrado</div>'
+        searchResults.style.display = 'block'
+        return
+    }
+
+    entradas.forEach(entrada => {
+        const div = document.createElement('div')
+        div.classList.add('search-result-item')
+        div.textContent = entrada.nombre
+        div.addEventListener('click', () => {
+            abrirEntrada(entrada)
+            searchInput.value = ''
+            searchResults.style.display = 'none'
+        })
+        searchResults.appendChild(div)
+    })
+    searchResults.style.display = 'block'
+})
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-bar') && !e.target.closest('.search-results')) {
+        searchInput.value = ''
+        searchResults.style.display = 'none'
+    }
+})
