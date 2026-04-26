@@ -103,7 +103,7 @@ function renderCarpeta(carpeta, todasCarpetas, todasEntradas) {
         mostrarModalMover(async (nuevoParentId) => {
             await supabase.from('carpetas').update({ parent_id: nuevoParentId }).eq('id', carpeta.id)
             await cargarArbol()
-        })
+        }, true, carpeta.id)
     })
     li.querySelector('.btn-delete').addEventListener('click', (e) => {
         e.stopPropagation()
@@ -136,7 +136,7 @@ function renderEntrada(entrada) {
         mostrarModalMover(async (nuevaCarpetaId) => {
             await supabase.from('entradas').update({ carpeta_id: nuevaCarpetaId }).eq('id', entrada.id)
             await cargarArbol()
-        }, false)
+        }, true, null)
     })
     li.querySelector('.btn-delete').addEventListener('click', (e) => {
         e.stopPropagation()
@@ -414,7 +414,26 @@ async function refrescarCache(params) {
 
 function actualizarPreview() {
     const procesado = procesarLinks(textarea.value, entradasCache)
-    preview.innerHTML = marked.parse(procesado)
+
+    const detailsRegex = /<details>([\s\S]*?)<\/details>/g
+    const detailsArray = []
+    let placeholderedText = procesado
+
+    let match
+    while ((match = detailsRegex.exec(procesado)) !== null) {
+        detailsArray.push(match[1])
+        placeholderedText = placeholderedText.replace(match[0], `|||DETAILS_${detailsArray.length - 1}|||`)
+    }
+
+    marked.setOptions({ breaks: true })
+    let rendered = marked.parse(placeholderedText)
+
+    detailsArray.forEach((content, index) => {
+        const processedContent = marked.parse(content)
+        rendered = rendered.replace(new RegExp(`.*?\\|\\|\\|DETAILS_${index}\\|\\|\\|.*?`), `<details>${processedContent}</details>`)
+    })
+
+    preview.innerHTML = rendered
 
     preview.querySelectorAll('.wiki-link').forEach(link => {
         link.addEventListener('click', async (e) => {
@@ -460,13 +479,13 @@ overlay.addEventListener('click', cerrarSidebar)
 
 cargarArbol()
 
-function mostrarModalMover(callback, mostrarRaiz = true) {
+function mostrarModalMover(callback, mostrarRaiz = true, carpetaActualId = null) {
     const modal = document.getElementById('modal-mover')
     const lista = document.getElementById('modal-lista')
     lista.innerHTML = ''
 
     // opción raíz
-    if (mostrarRaiz) {
+    if (mostrarRaiz && carpetaActualId) {
         const root = document.createElement('li')
         root.textContent = '/ (raíz)'
         root.addEventListener('click', () => {
@@ -479,6 +498,8 @@ function mostrarModalMover(callback, mostrarRaiz = true) {
     // todas las carpetas
     supabase.from('carpetas').select('*').then(({ data }) => {
         data.forEach(c => {
+            if (c.id === carpetaActualId) return
+
             const li = document.createElement('li')
             li.textContent = c.nombre
             li.addEventListener('click', () => {
