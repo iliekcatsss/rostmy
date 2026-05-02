@@ -6,74 +6,10 @@ console.log('usuario actual:', user.id)
 
 let itemActual = null
 let entradasCache = []
-const carpetasAbiertas = new Set();
 
 // arbol
+
 await refrescarCache()
-
-// detectar shared
-const params = new URLSearchParams(window.location.search)
-const sharedCode = params.get('shared')
-
-console.log('sharedCode:', sharedCode)  // ← ver si se detecta
-
-if (sharedCode) {
-    const { data: shared } = await supabase
-        .from('shared_items')
-        .select('item_id, item_type')
-        .eq('share_code', sharedCode)
-        .single()
-    
-    console.log('shared:', shared)
-    
-    if (shared) {
-        if (shared.item_type === 'entrada') {
-            const { data: entrada } = await supabase
-                .from('entradas')
-                .select('*')
-                .eq('id', shared.item_id)
-                .single()
-            console.log('entrada encontrada:', entrada)
-            if (entrada) {
-                await refrescarCache()
-                await cargarArbol()
-                abrirEntrada(entrada)
-            }
-      } else if (shared.item_type === 'carpeta') {
-    console.log('abriendo carpeta:', shared.item_id)
-    
-    // Agregar la carpeta compartida
-    carpetasAbiertas.add(shared.item_id)
-    
-    // Obtener la carpeta y todas sus ancestros
-    const { data: carpeta } = await supabase
-        .from('carpetas')
-        .select('parent_id')
-        .eq('id', shared.item_id)
-        .single()
-    
-    console.log('carpeta data:', carpeta)  // ← debug
-    
-    if (carpeta) {
-        // Agregar todos los ancestros
-        let parentId = carpeta.parent_id
-        while (parentId) {
-            carpetasAbiertas.add(parentId)
-            const { data: padre } = await supabase
-                .from('carpetas')
-                .select('parent_id')
-                .eq('id', parentId)
-                .single()
-            parentId = padre?.parent_id
-        }
-    }
-    
-    await refrescarCache()
-    await cargarArbol()
-}
-    }
-}
-
 cargarArbol()
 
 async function cargarArbol() {
@@ -93,11 +29,11 @@ async function cargarArbol() {
     btnNueva.onclick = () => nuevaCarpeta(null)
 }
 
+const carpetasAbiertas = new Set();
+
 function renderCarpeta(carpeta, todasCarpetas, todasEntradas) {
     const li = document.createElement('li')
     li.classList.add('folder');
-
-    li.setAttribute('data-folder-id', carpeta.id)
 
     if (carpetasAbiertas.has(carpeta.id)) {
         li.classList.add('open');
@@ -109,16 +45,16 @@ function renderCarpeta(carpeta, todasCarpetas, todasEntradas) {
     li.innerHTML = `
         <div class="folder-header">
             <span class="folder-nombre">${carpeta.nombre}</span>
+            <div class="item-acciones">
+                <button class="btn-icon btn-nueva-sub" title="Nueva subcarpeta">📁</button>
+                <button class="btn-icon btn-nueva-entrada" title="Nueva entrada">📄</button>
+                <button class="btn-icon btn-rename" title="Renombrar">✏️</button>
+                <button class="btn-icon btn-mover" title="Mover">📦</button>
+                <button class="btn-icon btn-delete" title="Eliminar carpeta">🗑️</button>
             </div>
-            <ul></ul>
-            `
-            // <div class="item-acciones">
-            //     <button class="btn-icon btn-nueva-sub" title="Nueva subcarpeta">📁</button>
-            //     <button class="btn-icon btn-nueva-entrada" title="Nueva entrada">📄</button>
-            //     <button class="btn-icon btn-rename" title="Renombrar">✏️</button>
-            //     <button class="btn-icon btn-mover" title="Mover">📦</button>
-            //     <button class="btn-icon btn-delete" title="Eliminar carpeta">🗑️</button>
-            // </div>
+        </div>
+        <ul></ul>
+    `
 
     const header = li.querySelector('.folder-header');
     header.onclick = (e) => {
@@ -148,33 +84,32 @@ function renderCarpeta(carpeta, todasCarpetas, todasEntradas) {
     li.querySelector('.folder-nombre').addEventListener('click', () => {
         li.classList.toggle('open')
     })
-    // li.querySelector('.btn-nueva-sub').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     nuevaCarpeta(carpeta.id)
-    // })
-    // li.querySelector('.btn-nueva-entrada').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     nuevaEntrada(carpeta.id)
-    // })
-    // li.querySelector('.btn-rename').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     const nuevo = prompt('Nuevo nombre:', carpeta.nombre)
-    //     if (!nuevo || nuevo === carpeta.nombre) return
-    //     supabase.from('carpetas').update({ nombre: nuevo }).eq('id', carpeta.id).then(cargarArbol)
-    // })
-    // li.querySelector('.btn-mover').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     mostrarModalMover(async (nuevoParentId) => {
-    //         await supabase.from('carpetas').update({ parent_id: nuevoParentId }).eq('id', carpeta.id)
-    //         await cargarArbol()
-    //     }, true, carpeta.id)
-    // })
-    // li.querySelector('.btn-delete').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     eliminarCarpeta(carpeta.id)
-    // })
-    
-    li.addEventListener('contextmenu', (e) => mostrarContextMenu(e, 'carpeta', carpeta.id))
+    li.querySelector('.btn-nueva-sub').addEventListener('click', (e) => {
+        e.stopPropagation()
+        nuevaCarpeta(carpeta.id)
+    })
+    li.querySelector('.btn-nueva-entrada').addEventListener('click', (e) => {
+        e.stopPropagation()
+        nuevaEntrada(carpeta.id)
+    })
+    li.querySelector('.btn-rename').addEventListener('click', (e) => {
+        e.stopPropagation()
+        const nuevo = prompt('Nuevo nombre:', carpeta.nombre)
+        if (!nuevo || nuevo === carpeta.nombre) return
+        supabase.from('carpetas').update({ nombre: nuevo }).eq('id', carpeta.id).then(cargarArbol)
+    })
+    li.querySelector('.btn-mover').addEventListener('click', (e) => {
+        e.stopPropagation()
+        mostrarModalMover(async (nuevoParentId) => {
+            await supabase.from('carpetas').update({ parent_id: nuevoParentId }).eq('id', carpeta.id)
+            await cargarArbol()
+        }, true, carpeta.id)
+    })
+    li.querySelector('.btn-delete').addEventListener('click', (e) => {
+        e.stopPropagation()
+        eliminarCarpeta(carpeta.id)
+    })
+
     return li
 }
 
@@ -183,112 +118,31 @@ function renderEntrada(entrada) {
     li.classList.add('item-contenedor')
     li.innerHTML = `
         <span class="item-nombre">${entrada.nombre}</span>
-        `
-        // <div class="item-acciones">
-        //     <button class="btn-icon btn-rename" title="Renombrar">✏️</button>
-        //     <button class="btn-icon btn-mover" title="Mover">📦</button>
-        //     <button class="btn-icon btn-delete" title="Eliminar">🗑️</button>
-        // </div>
-    // li.querySelector('.item-nombre').addEventListener('click', () => abrirEntrada(entrada))
-    // li.querySelector('.btn-rename').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     const nuevo = prompt('Nuevo nombre:', entrada.nombre)
-    //     if (!nuevo || nuevo === entrada.nombre) return
-    //     supabase.from('entradas').update({ nombre: nuevo }).eq('id', entrada.id).then(cargarArbol)
-    // })
-    // li.querySelector('.btn-mover').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     mostrarModalMover(async (nuevaCarpetaId) => {
-    //         await supabase.from('entradas').update({ carpeta_id: nuevaCarpetaId }).eq('id', entrada.id)
-    //         await cargarArbol()
-    //     }, true, null)
-    // })
-    // li.querySelector('.btn-delete').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     eliminarEntrada(entrada.id)
-    // })
-
-    li.addEventListener('contextmenu', (e) => mostrarContextMenu(e, 'entrada', entrada.id))
-    return li
-}
-
-// context menu
-let contetMenuTarget = null
-
-function mostrarContextMenu(e, tipo, id) {
-    e.preventDefault()
-    contetMenuTarget = { tipo, id }
-
-    const menu = document.getElementById('context-menu')
-    menu.style.left = e.clientX + 'px'
-    menu.style.top = e.clientY + 'px'
-    menu.style.display = 'block'
-}
-
-document.getElementById('context-menu').addEventListener('click', async (e) => {
-    const action = e.target.closest('.context-item')?.dataset.action
-    if (!action || !contetMenuTarget) return
-    
-    const { tipo, id } = contetMenuTarget
-    document.getElementById('context-menu').style.display = 'none'
-    
-    if (action === 'rename') {
-        if (tipo === 'carpeta') {
-            const { data: carpeta } = await supabase.from('carpetas').select('*').eq('id', id).single()
-            const nuevo = prompt('Nuevo nombre:', carpeta.nombre)
-            if (nuevo && nuevo !== carpeta.nombre) {
-                await supabase.from('carpetas').update({ nombre: nuevo }).eq('id', id)
-                await cargarArbol()
-            }
-        } else {
-            const { data: entrada } = await supabase.from('entradas').select('*').eq('id', id).single()
-            const nuevo = prompt('Nuevo nombnre:', entrada.nombre)
-            if (nuevo && nuevo !== entrada.nombre) {
-                await supabase.from('entradas').update({ nombre: nuevo }).eq('id', id)
-                await cargarArbol()
-            }
-        }
-    } else if (action === 'move') {
-        mostrarModalMover(async (nuevoParentId) => {
-            if (tipo === 'carpeta') {
-                await supabase.from('carpetas').update({ parent_id: nuevoParentId }).eq('id', id)
-            } else {
-                await supabase.from('entradas').update({ carpeta_id: nuevoParentId }).eq('id', id)
-            }
-            await cargarArbol()
-        }, true, tipo === 'carpeta' ? id : null)
-    } else if (action === 'share') {
-        await compartir(tipo, id)
-    } else if (action === 'delete') {
-        if (tipo === 'carpeta') {
-            eliminarCarpeta(id)
-        } else {
-            eliminarEntrada(id)
-        }
-    }
-})
-
-document.addEventListener('click', () => {
-    document.getElementById('context-menu').style.display = 'none'
-})
-
-function generarCodigoCompartir() {
-    return Math.random().toString(36).substring(2, 10) + 
-           Math.random().toString(36).substring(2, 10)
-}
-
-async function compartir(tipo, id) {
-    const shareCode = generarCodigoCompartir()
-    await supabase.from('shared_items').insert({
-        item_id: id,
-        item_type: tipo,
-        owner_id: user.id,
-        share_code: shareCode
+        <div class="item-acciones">
+            <button class="btn-icon btn-rename" title="Renombrar">✏️</button>
+            <button class="btn-icon btn-mover" title="Mover">📦</button>
+            <button class="btn-icon btn-delete" title="Eliminar">🗑️</button>
+        </div>
+    `
+    li.querySelector('.item-nombre').addEventListener('click', () => abrirEntrada(entrada))
+    li.querySelector('.btn-rename').addEventListener('click', (e) => {
+        e.stopPropagation()
+        const nuevo = prompt('Nuevo nombre:', entrada.nombre)
+        if (!nuevo || nuevo === entrada.nombre) return
+        supabase.from('entradas').update({ nombre: nuevo }).eq('id', entrada.id).then(cargarArbol)
     })
-
-    const link = `${window.location.origin}?shared=${shareCode}`
-    navigator.clipboard.writeText(link)
-    alert('Link copiado')
+    li.querySelector('.btn-mover').addEventListener('click', (e) => {
+        e.stopPropagation()
+        mostrarModalMover(async (nuevaCarpetaId) => {
+            await supabase.from('entradas').update({ carpeta_id: nuevaCarpetaId }).eq('id', entrada.id)
+            await cargarArbol()
+        }, true, null)
+    })
+    li.querySelector('.btn-delete').addEventListener('click', (e) => {
+        e.stopPropagation()
+        eliminarEntrada(entrada.id)
+    })
+    return li
 }
 
 // crud carpetas
@@ -367,7 +221,7 @@ let tabActiva = null
 let dragTab = null
 let dragOverTab = null
 // detalle
-async function abrirEntrada(entrada) {
+function abrirEntrada(entrada) {
     document.querySelector('.markdown-body').scrollTo({ top: 0, behavior: 'smooth' })
 
     // si ya está abierta cambiar a ella
@@ -376,15 +230,8 @@ async function abrirEntrada(entrada) {
         cambiarTab(existente)
         return
     }
-
-    // trare contenido fresco
-    const { data: entradaFresca } = await supabase
-        .from('entradas')
-        .select('*')
-        .eq('id', entrada.id)
-        .single()
     
-    const tab = { entrada: entradaFresca ?? entrada, unsaved: false }
+    const tab = { entrada, unsaved: false }
     tabs.push(tab)
     cambiarTab(tab)
     renderTabs()
@@ -536,27 +383,6 @@ document.querySelector('.guardar').addEventListener('click', async () => {
     await cargarArbol()
 })
 
-// autoguardado (se supone)
-let saveTimeout = null
-
-function autoguardar() {
-    if (!tabActiva) return
-    clearTimeout(saveTimeout)
-    saveTimeout = setTimeout(async () => {
-        const nombre = document.querySelector('.detail-titulo').value
-        const contenido = textarea.value
-        await supabase.from('entradas').update({ nombre, contenido }).eq('id', tabActiva.entrada.id)
-        await refrescarCache()
-        tabActiva.entrada.nombre = nombre
-        tabActiva.entrada.contenido = contenido
-        tabActiva.draft = null
-        tabActiva.draftNombre = null
-        tabActiva.unsaved = false
-        renderTabs()
-        await cargarArbol()
-    }, 1000)
-}
-
 // cerrar sesion
 document.querySelector('#btn-logout').addEventListener('click', async () => {
     await supabase.auth.signOut()
@@ -651,55 +477,7 @@ btnMenu.addEventListener('click', () => {
 
 overlay.addEventListener('click', cerrarSidebar)
 
-// realtime (creo)
-supabase
-    .channel('entradas-changes')
-    .on('postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'entradas'},
-        (payload) => {
-            console.log('cambio recibido:', payload)
-            const entradaActualizada = payload.new
-
-            // actualizar cache
-            const idx = entradasCache.findIndex(e => e.id === entradaActualizada.id)
-            if (idx !== -1) entradasCache[idx] = entradaActualizada
-
-            // si esta abierta
-            const tab = tabs.find(t => t.entrada.id === entradaActualizada.id)
-            if (tab) {
-                tab.entrada = entradaActualizada
-
-                //si es la tab activa y no hay cambios sin guardar actualizar contenido
-                if (tab === tabActiva && !tab.unsaved) {
-                    textarea.value = entradaActualizada.contenido ?? ''
-                    document.querySelector('.detail-titulo').value = entradaActualizada.nombre
-                    actualizarPreview()
-                }
-
-                renderTabs()
-            }
-        }
-    )
-    .subscribe((status) => {
-        console.log('realtime status:', status)
-    })
-
-supabase
-    .channel('arbol-changes')
-    .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'entradas' },
-        async (payload) => {
-            await refrescarCache()
-            await cargarArbol()
-        }
-    )
-    .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'carpetas' },
-        async () => {
-            await cargarArbol()
-        }
-    )
-    .subscribe()
+cargarArbol()
 
 function mostrarModalMover(callback, mostrarRaiz = true, carpetaActualId = null) {
     const modal = document.getElementById('modal-mover')
@@ -757,7 +535,6 @@ textarea.addEventListener('input', () => {
         document.querySelector('.tab.activa')?.classList.add('sin-guardar')
     }
     actualizarPreview()
-    autoguardar()
 })
 
 document.querySelector('.detail-titulo').addEventListener('input', () => {
@@ -765,7 +542,6 @@ document.querySelector('.detail-titulo').addEventListener('input', () => {
         tabActiva.unsaved = true
         renderTabs()
     }
-    autoguardar()
 })
 
 // searchbar
