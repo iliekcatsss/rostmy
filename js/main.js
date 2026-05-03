@@ -50,6 +50,7 @@ async function cargarAnuncio() {
         // solo lectura
         textarea.style.display = 'none'
         document.querySelector('.guardar').style.display = 'none'
+        document.querySelector('.detail-titulo').value = 'Anuncios'
         document.querySelector('.detail-titulo').disabled = true
     }
 }
@@ -592,6 +593,17 @@ let saveTimeout = null
 
 function autoguardar() {
     if (!tabActiva) return
+    if (tabActiva.entrada.nombre === '__anuncio__') {
+        // no guarda nombre
+        clearTimeout(saveTimeout)
+        saveTimeout = setTimeout( async() => {
+            await supabase.from('entradas').update({ contenido: textarea.value }).eq('id', tabActiva.entrada.id)
+            tabActiva.unsaved = false
+            renderTabs()
+        }, 1000);
+        return
+    }
+
     clearTimeout(saveTimeout)
     saveTimeout = setTimeout(async () => {
         const nombre = document.querySelector('.detail-titulo').value
