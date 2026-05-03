@@ -6,7 +6,53 @@ console.log('usuario actual:', user.id)
 
 let itemActual = null
 let entradasCache = []
-const carpetasAbiertas = new Set();
+const carpetasAbiertas = new Set()
+
+const textarea = document.querySelector('.detail-contenido')
+const preview = document.getElementById('preview')
+const editorContainer = document.querySelector('.editor-container')
+
+let tabs = []
+let tabActiva = null
+let dragTab = null
+let dragOverTab = null
+
+// anuncio
+const ADMIN_ID = '41fc18ec-1284-460e-afa1-91e689958a10'
+
+async function cargarAnuncio() {
+    const { data } = await supabase
+        .from('entradas')
+        .select('*')
+        .eq('nombre', '__anuncio__')
+        .maybeSingle()
+    
+    if (!data) return
+
+    const placeholderTitle = document.getElementById('placeholder-title')
+    const placeholderContent = document.getElementById('placeholder-content')
+
+    placeholderTitle.style.display = 'none'
+    placeholderContent.style.display = 'none'
+    document.getElementById('editor-view').style.display = 'flex'
+
+    document.querySelector('.detail-titulo').value = 'Anuncios'
+    textarea.value = data.contenido ?? ''
+    actualizarPreview()
+
+    // si eres admin abrir como editable
+    if (user.id === ADMIN_ID) {
+        const tab = { entrada: data, unsaved: false }
+        tabs.push(tab)
+        tabActiva = tab
+        renderTabs()
+    } else {
+        // solo lectura
+        textarea.style.display = 'none'
+        document.querySelector('.guardar').style.display = 'none'
+        document.querySelector('.detail-titulo').disabled = true
+    }
+}
 
 // arbol
 await refrescarCache()
@@ -93,6 +139,8 @@ async function cargarArbol() {
     const btnNueva = document.getElementById('btn-nueva-carpeta')
     btnNueva.onclick = () => nuevaCarpeta(null)
 }
+
+await cargarAnuncio()
 
 function renderCarpeta(carpeta, todasCarpetas, todasEntradas) {
     const li = document.createElement('li')
@@ -184,31 +232,8 @@ function renderEntrada(entrada) {
     li.classList.add('item-contenedor')
     li.innerHTML = `
         <span class="item-nombre">${entrada.nombre}</span>
-        `
-        // <div class="item-acciones">
-        //     <button class="btn-icon btn-rename" title="Renombrar">✏️</button>
-        //     <button class="btn-icon btn-mover" title="Mover">📦</button>
-        //     <button class="btn-icon btn-delete" title="Eliminar">🗑️</button>
-        // </div>
-    // li.querySelector('.item-nombre').addEventListener('click', () => abrirEntrada(entrada))
-    // li.querySelector('.btn-rename').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     const nuevo = prompt('Nuevo nombre:', entrada.nombre)
-    //     if (!nuevo || nuevo === entrada.nombre) return
-    //     supabase.from('entradas').update({ nombre: nuevo }).eq('id', entrada.id).then(cargarArbol)
-    // })
-    // li.querySelector('.btn-mover').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     mostrarModalMover(async (nuevaCarpetaId) => {
-    //         await supabase.from('entradas').update({ carpeta_id: nuevaCarpetaId }).eq('id', entrada.id)
-    //         await cargarArbol()
-    //     }, true, null)
-    // })
-    // li.querySelector('.btn-delete').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     eliminarEntrada(entrada.id)
-    // })
-
+    `
+    li.querySelector('.item-nombre').addEventListener('click', () => abrirEntrada(entrada))
     li.addEventListener('contextmenu', (e) => mostrarContextMenu(e, 'entrada', entrada.id))
     return li
 }
@@ -392,10 +417,6 @@ async function eliminarEntrada(id) {
     await cargarArbol()
 }
 
-let tabs = []
-let tabActiva = null
-let dragTab = null
-let dragOverTab = null
 // detalle
 async function abrirEntrada(entrada) {
     document.querySelector('.markdown-body').scrollTo({ top: 0, behavior: 'smooth' })
@@ -592,10 +613,6 @@ document.querySelector('#btn-logout').addEventListener('click', async () => {
     await supabase.auth.signOut()
     window.location.href = '/login.html'
 })
-
-const textarea = document.querySelector('.detail-contenido');
-const preview = document.getElementById('preview');
-const editorContainer = document.querySelector('.editor-container')
 
 function procesarLinks(texto, todasEntradas) {
     return texto.replace(/\[\[(.+?)\]\]/g, (match, contenido) => {
