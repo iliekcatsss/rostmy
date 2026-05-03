@@ -277,6 +277,8 @@ button {
     white-space: nowrap;
     border: 1px solid #28292a;
     border-bottom: none;
+    border-top: none;
+    border-right: none;
     color: #888;
     font-size: 0.85rem;
     flex-shrink: 0;
@@ -299,7 +301,7 @@ button {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #2294ba;
+    background: #bfbfbf;
     flex-shrink: 0;
 }
 

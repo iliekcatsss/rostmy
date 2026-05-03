@@ -8,6 +8,7 @@
     position: sticky;
     top: 0;
     z-index: 50;
+    margin-bottom: 1.13rem;
 }
 
 .search-bar {
