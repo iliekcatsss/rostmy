@@ -35,6 +35,7 @@ async function cargarAnuncio() {
     placeholderTitle.style.display = 'none'
     placeholderContent.style.display = 'none'
     document.getElementById('editor-view').style.display = 'flex'
+    document.querySelector('.detail-titulo').style.display = 'none'
 
     document.querySelector('.detail-titulo').value = 'Anuncios'
     textarea.value = data.contenido ?? ''
@@ -443,6 +444,7 @@ async function abrirEntrada(entrada) {
 }
 
 function cambiarTab(tab) {
+    document.querySelector('.editor-header').style.display = 'flex'
     if (tabActiva && tabActiva !== tab) {
         tabActiva.draft = textarea.value
         tabActiva.draftNombre = document.querySelector('.detail-titulo').value
@@ -679,6 +681,9 @@ function actualizarPreview() {
 
 // abrir editor
 preview.addEventListener('click', () => {
+    if (tabActiva.entrada.id === 99) {
+        if (!user.id === ADMIN_ID) return
+    }
     editorContainer.classList.add('editing')
     textarea.focus()
 })
