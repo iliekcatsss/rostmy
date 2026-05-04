@@ -112,4 +112,43 @@
     .btn-icon {
         filter: grayscale(0);
     }
+
+    /* ajustes */
+    .modal-contenido.ajustes {
+        all: unset;
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: 80%;
+        padding: 0;
+        position: relative;
+    }
+
+    .ajustes-sidebar {
+        min-width: fit-content;
+        width: 25%;
+        background: #1a1a1b;
+        border-right: 1px solid #28292a;
+        padding: 20px 0;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .ajustes-contenido {
+        background: #1e1e1e;
+    }
+
+    #modal-ajustes-cerrar {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 4px 8px;
+    }
 }

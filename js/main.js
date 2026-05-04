@@ -444,7 +444,7 @@ async function abrirEntrada(entrada) {
 }
 
 function cambiarTab(tab) {
-    document.querySelector('.editor-header').style.display = 'flex'
+    // document.querySelector('.editor-header').style.display = 'flex'
     if (tabActiva && tabActiva !== tab) {
         tabActiva.draft = textarea.value
         tabActiva.draftNombre = document.querySelector('.detail-titulo').value
@@ -878,3 +878,57 @@ document.addEventListener('click', (e) => {
         searchResults.style.display = 'none'
     }
 })
+
+// ajustes
+document.getElementById('btn-ajustes').addEventListener('click', () => {
+    document.getElementById('ajuste-email').textContent = user.email
+    document.getElementById('modal-ajustes').style.display = 'flex'
+})
+
+document.getElementById('modal-ajustes-cerrar').addEventListener('click', () => {
+    document.getElementById('modal-ajustes').style.display = 'none'
+})
+
+document.querySelectorAll('.ajuste-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.ajuste-tab').forEach(b => b.classList.remove('activa'))
+        document.querySelectorAll('.ajuste-panel').forEach(p => p.classList.remove('activo'))
+        btn.classList.add('activa')
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add('activo')
+    })
+})
+
+// cambiar contraseña
+document.getElementById('btn-cambiar-password').addEventListener('click', async () => {
+    const { error } = await supabase.auth.resetPasswordForEmail(user.email)
+    if (error) {
+        alert('Error: ' + error.message)
+    } else {
+        alert('Te enviamos un correo para cambiar tu contraseña')
+    }
+})
+
+// cerrar sesión
+document.getElementById('btn-logout-ajustes').addEventListener('click', async () => {
+    await supabase.auth.signOut()
+    window.location.href = "/login.html"
+})
+
+// tema
+const tema = localStorage.getItem('tema') || 'oscuro'
+aplicarTema(tema)
+document.getElementById('select-tema').value = tema
+
+document.getElementById('select-tema').addEventListener('change', (e) => {
+    aplicarTema(e.target.value)
+    localStorage.setItem('tema', e.target.value)
+})
+
+function aplicarTema(tema) {
+    console.log('Tema: ' + tema)
+    if (tema === 'claro') {
+        document.body.classList.add('tema-claro')
+    } else {
+        document.body.classList.remove('tema-claro')
+    }
+}

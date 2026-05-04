@@ -20,6 +20,7 @@
     <div class="content">
         <div class="card tree">
             <button id="btn-logout">Cerrar Sesión</button>
+            <button id="btn-ajustes">⚙️ Ajustes</button>
             <aside class="sidebar">
                 <button id="btn-nueva-carpeta"> + Carpeta</button>
                 <ul class="tree" id="arbol"></ul>
@@ -61,6 +62,35 @@
         <button class="context-item" data-action="delete">Eliminar 🗑️</button>
     </div>
 
+    <div id="modal-ajustes" class="modal" style="display: none;">
+        <div class="modal-contenido ajustes">
+            <div class="ajustes-sidebar">
+                <h3>Ajustes</h3>
+                <button class="ajuste-tab activa" data-tab="cuenta">Cuenta</button>
+                <button class="ajuste-tab" data-tab="apariencia">Apariencia</button>
+            </div>
+            <div class="ajustes-contenido">
+                <div class="ajuste-panel activo" id="tab-cuenta">
+                    <h3>Cuenta</h3>
+                    <p id="ajuste-email"></p>
+                    <button id="btn-cambiar-password">Cambiar contraseña</button>
+                    <button id="btn-logout-ajustes">Cerrar sesión</button>
+                </div>
+                <div class="ajuste-panel" id="tab-apariencia">
+                    <h3>Apariencia</h3>
+                    <label>
+                        <span>Tema</span>
+                        <select id="select-tema">
+                            <option value="oscuro">Oscuro</option>
+                            <option value="claro">Claro</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+            <button id="modal-ajustes-cerrar">✕</button>
+        </div>
+    </div>
+        
     // scriptS
     <script type="module" src="js/main.js"></script>
 </body>

@@ -1,0 +1,35 @@
+body.tema-claro {
+    background: #f5f5f5;
+    color: #1a1a1a
+}
+
+body.tema-claro .card,
+body.tema-claro .card.tree,
+body.tema-claro .card:not(.tree) {
+    background: #ffffff;
+    color: #1a1a1a;
+    border-color: #ddd;
+}
+
+body.tema-claro #navbar{
+    background: #eeeeee;
+    border-color: #ddd;
+}
+
+body.tema-claro .tab {
+    background: #e0e0e0;
+    color: #444;
+    border-color: #ddd;
+}
+
+body.tema-claro .tab.activa {
+    background: #ffffff;
+    color: #1a1a1a;
+    border-top: 1px solid #2294ba;
+}
+
+body.tema-claro .detail-contenido,
+body.tema-claro #preview {
+    background: #ffffff;
+    color: #1a1a1a
+}
