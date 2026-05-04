@@ -58,10 +58,15 @@ input, select, textarea {
     resize: none;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus, textarea:focus {
     border: none;
     outline: 1px solid #277893;
     outline-offset: 2px;
+}
+
+select:focus {
+    border: none;
+    outline: none;
 }
 
 ::-webkit-scrollbar {

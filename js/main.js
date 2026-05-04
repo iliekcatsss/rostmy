@@ -558,7 +558,7 @@ function renderTabs() {
         if (tab === tabActiva) div.classList.add('active')
         div.innerHTML = `
             <span>${tab.entrada.nombre}${tab.unsaved ? ' ●' : ''}</span>
-            <button class="cerrar" style="background:none;border:none;color:#888;cursor:pointer;"×</button>
+            <button class="cerrar" style="background:none;border:none;color:#888;cursor:pointer;">×</button>
         `
         div.addEventListener('click', () => { cambiarTab(tab); dropdown.classList.remove('visible') })
         div.querySelector('.cerrar').addEventListener('click', (e) => cerrarTab(tab, e))
