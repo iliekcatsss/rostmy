@@ -7,14 +7,17 @@
 Rostmy es un creador de notas, pensado para la eficiente gestión de archivos de texto.
 
 > [!WARNING]
-> Pueden ocurrir errores. Para no arriesgarte a perder tu progreso, guarda cada poco tiempo.
+> Pueden ocurrir errores. Para no arriesgarte a perder tu progreso, guarda cada poco tiempo y ten un respaldo.
 
-# Propiedades
+# Características
 
-- Editor markdown con preview en tiempo real
+- Editor con preview en tiempo real
+- Soporte para markdown
 - Organización por carpetas anidadas
 - Multi-usuario con datos separados
 - Accesible desde cualquier dispositivo
+- Colaboración en equipo
+- Distintos temas (en desarrollo)
 
 ---
 
