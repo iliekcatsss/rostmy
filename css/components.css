@@ -205,6 +205,10 @@ button {
     display: block;
 }
 
+.editor-container:not(.editing) .detail-contenido {
+    display: none !important;
+}
+
 .detail-contenido, #preview {
     height: 75vh;
     padding: 25px;

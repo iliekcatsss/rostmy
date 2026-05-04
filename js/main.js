@@ -4,6 +4,7 @@ import './auth.js'
 const { data: { user } } = await supabase.auth.getUser()
 console.log('usuario actual:', user.id)
 
+let esAnuncio = false
 let itemActual = null
 let entradasCache = []
 const carpetasAbiertas = new Set()
@@ -21,6 +22,7 @@ let dragOverTab = null
 const ADMIN_ID = '41fc18ec-1284-460e-afa1-91e689958a10'
 
 async function cargarAnuncio() {
+    editorContainer.classList.remove('editing')
     const { data } = await supabase
         .from('entradas')
         .select('*')
@@ -35,12 +37,15 @@ async function cargarAnuncio() {
     placeholderTitle.style.display = 'none'
     placeholderContent.style.display = 'none'
     document.getElementById('editor-view').style.display = 'flex'
+    editorContainer.classList.remove('editing')
+    console.log('clases después de remove:', editorContainer.className)
     document.querySelector('.detail-titulo').style.display = 'none'
 
     document.querySelector('.detail-titulo').value = 'Anuncios'
     textarea.value = data.contenido ?? ''
     actualizarPreview()
 
+    esAnuncio = true
     // si eres admin abrir como editable
     if (user.id === ADMIN_ID) {
         const tab = { entrada: data, unsaved: false }
@@ -49,9 +54,8 @@ async function cargarAnuncio() {
         renderTabs()
     } else {
         // solo lectura
-        textarea.style.display = 'none'
+        textarea.disabled = true
         document.querySelector('.guardar').style.display = 'none'
-        document.querySelector('.detail-titulo').value = 'Anuncios'
         document.querySelector('.detail-titulo').disabled = true
     }
 }
@@ -444,6 +448,13 @@ async function abrirEntrada(entrada) {
 }
 
 function cambiarTab(tab) {
+    esAnuncio = false
+
+    // reactivar textarea y guardar por si venían del anuncio
+    textarea.disabled = false
+    document.querySelector('.guardar').style.display = 'block'
+    document.querySelector('.detail-titulo').disabled = false
+
     // document.querySelector('.editor-header').style.display = 'flex'
     if (tabActiva && tabActiva !== tab) {
         tabActiva.draft = textarea.value
@@ -668,7 +679,10 @@ function actualizarPreview() {
         rendered = rendered.replace(new RegExp(`.*?\\|\\|\\|DETAILS_${index}\\|\\|\\|.*?`), `<details>${processedContent}</details>`)
     })
 
-    preview.innerHTML = rendered
+    preview.innerHTML = DOMPurify.sanitize(rendered, {
+        ADD_TAGS: ['details', 'summary'],
+        ADD_ATTR: ['class', 'data-id', 'href']
+    })
 
     preview.querySelectorAll('.wiki-link').forEach(link => {
         link.addEventListener('click', async (e) => {
@@ -680,16 +694,19 @@ function actualizarPreview() {
 }
 
 // abrir editor
-preview.addEventListener('click', () => {
-    if (tabActiva.entrada.id === 99) {
-        if (!user.id === ADMIN_ID) return
+preview.addEventListener('click', (e) => {
+    if (esAnuncio && user.id !== ADMIN_ID) {
+        e.stopPropagation()
+        return
     }
+    e.stopPropagation()
     editorContainer.classList.add('editing')
     textarea.focus()
 })
 
 // cerrar editor
 document.addEventListener('click', (e) => {
+    console.log('display del textarea:', window.getComputedStyle(textarea).display)
     if (!editorContainer.contains(e.target)) {
         editorContainer.classList.remove('editing')
     }
