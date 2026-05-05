@@ -949,3 +949,9 @@ function aplicarTema(tema) {
         document.body.classList.remove('tema-claro')
     }
 }
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+        .then(() => console.log('SW registrado'))
+        .catch(err => console.error('SW error:', err))
+}
