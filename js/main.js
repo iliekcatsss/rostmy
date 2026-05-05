@@ -204,10 +204,6 @@ async function cargarArbol() {
         entradas = await obtenerTodos('entradas')
     }
     
-    const { data: carpetas } = await supabase.from('carpetas').select('*')
-    console.log('carpetas cargadas:', carpetas?.map(c => c.id))
-    const { data: entradas } = await supabase.from('entradas').select('*')
-
     const raices = carpetas.filter(c => c.parent_id === null)
     const contenedor = document.getElementById('arbol')
     contenedor.innerHTML = ''
