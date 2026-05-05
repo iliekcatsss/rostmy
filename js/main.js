@@ -50,18 +50,25 @@ import './auth.js'
 
 let user = null
 try {
-    const { data } = await supabase.auth.getUser()
-    user = data.user
+    if (navigator.onLine) {
+        const { data } = await supabase.auth.getUser()
+        user = data.user
+    } else {
+        const { data } = await supabase.auth.getSession()
+        user = data.session?.user ?? null
+    }
 } catch (e) {
-    // sin internet, intentar sesión local
-    const { data } = await supabase.auth.getSession()
-    user = data.session?.user ?? null
+    try {
+        const { data } = await supabase.auth.getSession()
+        user = data.session?.user ?? null
+    } catch (e2) {
+        console.error('No se pudo obtener sesión:', e2)
+    }
 }
 
 if (!user) {
     window.location.href = '/login.html'
 }
-console.log('usuario actual:', user.id)
 
 let esAnuncio = false
 let itemActual = null
