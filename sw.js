@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rostmy-v3'
+const CACHE_NAME = 'rostmy-v4'
 const ASSETS = [
     '/',
     '/index.html',
@@ -27,6 +27,8 @@ self.addEventListener('install', (e) => {
 })
 
 self.addEventListener('fetch', (e) => {
+    if (!e.request.url.startsWith(self.location.origin)) return
+
     e.respondWith(
         caches.match(e.request).then(cached => {
             return cached || fetch(e.request)
