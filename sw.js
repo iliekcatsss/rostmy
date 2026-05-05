@@ -1,13 +1,23 @@
-const CACHE_NAME = 'rostmy-v1'
+const CACHE_NAME = 'rostmy-v2'
 const ASSETS = [
     '/',
     '/index.html',
     '/login.html',
     '/css/main.css',
+    '/css/base.css',
+    '/css/card.css',
+    '/css/components.css',
+    '/css/utils.css',
+    '/css/mobile.css',
+    '/css/markdown.css',
+    '/css/navbar.css',
     '/js/main.js',
     '/js/supabase.js',
     '/js/auth.js',
-    '/manifest.json'
+    '/js/db.js',
+    '/manifest.json',
+    '/icons/icon-192.png',
+    '/icons/icon-512.png'
 ]
 
 self.addEventListener('install', (e) => {
