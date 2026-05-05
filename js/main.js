@@ -14,6 +14,14 @@ window.addEventListener('offline', () => {
     hayInternet = false
 })
 
+window.addEventListener('unhandledrejection', (e) => {
+    document.body.insertAdjacentHTML('afterbegin', 
+        `<div style="background:red;color:white;padding:10px;position:fixed;top:0;z-index:9999;width:100%">
+            ERROR: ${e.reason}
+        </div>`
+    )
+})
+
 async function sincronizarPendientes() {
     const pendientes = await obtenerPendientes()
     if (pendientes.length === 0) return
@@ -183,8 +191,6 @@ async function cargarArbol() {
         carpetas = await obtenerTodos('carpetas')
         entradas = await obtenerTodos('entradas')
     }
-
-}
     
     const { data: carpetas } = await supabase.from('carpetas').select('*')
     console.log('carpetas cargadas:', carpetas?.map(c => c.id))
