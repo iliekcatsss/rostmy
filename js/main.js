@@ -1,3 +1,42 @@
+import { initDB, guardarLocal, obtenerTodos, agregarPendiente, obtenerPendientes, limpiarPendientes } from './db.js'
+
+await initDB()
+
+// detectar conexión
+let hayInternet = navigator.onLine
+
+window.addEventListener('online', async () => {
+    hayInternet = true
+    await sincronizarPendientes()
+})
+
+window.addEventListener('offline', () => {
+    hayInternet = false
+})
+
+async function sincronizarPendientes() {
+    const pendientes = await obtenerPendientes()
+    if (pendientes.length === 0) return
+
+    console.log('sincronizando', pendientes.length, 'cambios pendientes')
+
+    for (const op of pendientes) {
+        if (op.tipo === 'update_entrada') {
+            await supabase.from('entradas')
+                .update({ nombre: op.nombre, contenido: op.contenido })
+                .eq('id', op.item_id)
+        } else if (op.tipo === 'insert_entrada') {
+            await supabase.from('entradas')
+                .insert({ nombre: op.nombre, contenido: op.contenido, carpeta_id: op.carpeta_id })
+        }
+    }
+
+    await limpiarPendientes()
+    await refrescarCache()
+    await cargarArbol()
+    console.log('sync completado')
+}
+
 import { supabase } from './supabase.js'
 import './auth.js'
 
@@ -129,6 +168,24 @@ if (sharedCode) {
 cargarArbol()
 
 async function cargarArbol() {
+    let carpetas, entradas
+
+    if (hayInternet) {
+        const resCarpetas = await supabase.from('carpetas').select('*')
+        const resEntradas = await supabase.from('entradas').select('*')
+        carpetas = resCarpetas.data
+        entradas = resEntradas.data
+
+        // guardar local para offline
+        for (const c of carpetas) await guardarLocal('carpetas', c)
+        for (const e of entradas) await guardarLocal('entradas', e)
+    } else {
+        carpetas = await obtenerTodos('carpetas')
+        entradas = await obtenerTodos('entradas')
+    }
+
+}
+    
     const { data: carpetas } = await supabase.from('carpetas').select('*')
     console.log('carpetas cargadas:', carpetas?.map(c => c.id))
     const { data: entradas } = await supabase.from('entradas').select('*')
@@ -606,30 +663,37 @@ let saveTimeout = null
 
 function autoguardar() {
     if (!tabActiva) return
-    if (tabActiva.entrada.nombre === '__anuncio__') {
-        // no guarda nombre
-        clearTimeout(saveTimeout)
-        saveTimeout = setTimeout( async() => {
-            await supabase.from('entradas').update({ contenido: textarea.value }).eq('id', tabActiva.entrada.id)
-            tabActiva.unsaved = false
-            renderTabs()
-        }, 1000);
-        return
-    }
+    if (tabActiva.entrada.id === 99 && user.id !== ADMIN_ID) return
 
     clearTimeout(saveTimeout)
     saveTimeout = setTimeout(async () => {
         const nombre = document.querySelector('.detail-titulo').value
         const contenido = textarea.value
-        await supabase.from('entradas').update({ nombre, contenido }).eq('id', tabActiva.entrada.id)
-        await refrescarCache()
+
+        // guardar local siempre
+        await guardarLocal('entradas', { ...tabActiva.entrada, nombre, contenido })
+
+        if (hayInternet) {
+            // guardar en supabase
+            await supabase.from('entradas').update({ nombre, contenido }).eq('id', tabActiva.entrada.id)
+            await refrescarCache()
+        } else {
+            // guardar como pendiente
+            await agregarPendiente({
+                tipo: 'update_entrada',
+                item_id: tabActiva.entrada.id,
+                nombre,
+                contenido
+            })
+            console.log('sin internet, guardado localmente')
+        }
+
         tabActiva.entrada.nombre = nombre
         tabActiva.entrada.contenido = contenido
         tabActiva.draft = null
         tabActiva.draftNombre = null
         tabActiva.unsaved = false
         renderTabs()
-        await cargarArbol()
     }, 1000)
 }
 
