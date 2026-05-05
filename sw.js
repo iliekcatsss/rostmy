@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rostmy-v4'
+const CACHE_NAME = 'rostmy-v5'
 const ASSETS = [
     '/',
     '/index.html',
@@ -11,13 +11,15 @@ const ASSETS = [
     '/css/mobile.css',
     '/css/markdown.css',
     '/css/navbar.css',
+    '/css/temaclaro.css',
     '/js/main.js',
     '/js/supabase.js',
     '/js/auth.js',
     '/js/db.js',
     '/manifest.json',
     '/icons/icon-192.png',
-    '/icons/icon-512.png'
+    '/icons/icon-512.png',
+    '/favicon.ico',
 ]
 
 self.addEventListener('install', (e) => {

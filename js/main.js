@@ -48,7 +48,19 @@ async function sincronizarPendientes() {
 import { supabase } from './supabase.js'
 import './auth.js'
 
-const { data: { user } } = await supabase.auth.getUser()
+let user = null
+try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+} catch (e) {
+    // sin internet, intentar sesión local
+    const { data } = await supabase.auth.getSession()
+    user = data.session?.user ?? null
+}
+
+if (!user) {
+    window.location.href = '/login.html'
+}
 console.log('usuario actual:', user.id)
 
 let esAnuncio = false
