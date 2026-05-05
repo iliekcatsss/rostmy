@@ -49,22 +49,16 @@ import { supabase } from './supabase.js'
 import './auth.js'
 
 let user = null
-try {
-    if (navigator.onLine) {
-        const { data } = await supabase.auth.getUser()
-        user = data.user
-    } else {
-        const { data } = await supabase.auth.getSession()
-        user = data.session?.user ?? null
-    }
-} catch (e) {
-    try {
-        const { data } = await supabase.auth.getSession()
-        user = data.session?.user ?? null
-    } catch (e2) {
-        console.error('No se pudo obtener sesión:', e2)
-    }
+
+const { data: sessionData } = await supabase.auth.getSession()
+user = sessionData.session?.user ?? null
+
+if (!user) {
+    window.location.href = '/login.html'
+    throw new Error('No session') // detiene la ejecución
 }
+
+console.log('usuario actual:', user.id)
 
 if (!user) {
     window.location.href = '/login.html'
