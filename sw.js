@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rostmy-v5'
+const CACHE_NAME = 'rostmy-v7'
 const ASSETS = [
     '/',
     '/index.html',
