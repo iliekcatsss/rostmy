@@ -1,68 +1,8 @@
-import { initDB, guardarLocal, obtenerTodos, agregarPendiente, obtenerPendientes, limpiarPendientes } from './db.js'
-
-await initDB()
-
-// detectar conexión
-let hayInternet = navigator.onLine
-
-window.addEventListener('online', async () => {
-    hayInternet = true
-    await sincronizarPendientes()
-})
-
-window.addEventListener('offline', () => {
-    hayInternet = false
-})
-
-window.addEventListener('unhandledrejection', (e) => {
-    document.body.insertAdjacentHTML('afterbegin', 
-        `<div style="background:red;color:white;padding:10px;position:fixed;top:0;z-index:9999;width:100%">
-            ERROR: ${e.reason}
-        </div>`
-    )
-})
-
-async function sincronizarPendientes() {
-    const pendientes = await obtenerPendientes()
-    if (pendientes.length === 0) return
-
-    console.log('sincronizando', pendientes.length, 'cambios pendientes')
-
-    for (const op of pendientes) {
-        if (op.tipo === 'update_entrada') {
-            await supabase.from('entradas')
-                .update({ nombre: op.nombre, contenido: op.contenido })
-                .eq('id', op.item_id)
-        } else if (op.tipo === 'insert_entrada') {
-            await supabase.from('entradas')
-                .insert({ nombre: op.nombre, contenido: op.contenido, carpeta_id: op.carpeta_id })
-        }
-    }
-
-    await limpiarPendientes()
-    await refrescarCache()
-    await cargarArbol()
-    console.log('sync completado')
-}
-
 import { supabase } from './supabase.js'
 import './auth.js'
 
-let user = null
-
-const { data: sessionData } = await supabase.auth.getSession()
-user = sessionData.session?.user ?? null
-
-if (!user) {
-    window.location.href = '/login.html'
-    throw new Error('No session') // detiene la ejecución
-}
-
+const { data: { user } } = await supabase.auth.getUser()
 console.log('usuario actual:', user.id)
-
-if (!user) {
-    window.location.href = '/login.html'
-}
 
 let esAnuncio = false
 let itemActual = null
@@ -189,22 +129,10 @@ if (sharedCode) {
 cargarArbol()
 
 async function cargarArbol() {
-    let carpetas, entradas
+    const { data: carpetas } = await supabase.from('carpetas').select('*')
+    console.log('carpetas cargadas:', carpetas?.map(c => c.id))
+    const { data: entradas } = await supabase.from('entradas').select('*')
 
-    if (hayInternet) {
-        const resCarpetas = await supabase.from('carpetas').select('*')
-        const resEntradas = await supabase.from('entradas').select('*')
-        carpetas = resCarpetas.data
-        entradas = resEntradas.data
-
-        // guardar local para offline
-        for (const c of carpetas) await guardarLocal('carpetas', c)
-        for (const e of entradas) await guardarLocal('entradas', e)
-    } else {
-        carpetas = await obtenerTodos('carpetas')
-        entradas = await obtenerTodos('entradas')
-    }
-    
     const raices = carpetas.filter(c => c.parent_id === null)
     const contenedor = document.getElementById('arbol')
     contenedor.innerHTML = ''
@@ -678,37 +606,30 @@ let saveTimeout = null
 
 function autoguardar() {
     if (!tabActiva) return
-    if (tabActiva.entrada.id === 99 && user.id !== ADMIN_ID) return
+    if (tabActiva.entrada.nombre === '__anuncio__') {
+        // no guarda nombre
+        clearTimeout(saveTimeout)
+        saveTimeout = setTimeout( async() => {
+            await supabase.from('entradas').update({ contenido: textarea.value }).eq('id', tabActiva.entrada.id)
+            tabActiva.unsaved = false
+            renderTabs()
+        }, 1000);
+        return
+    }
 
     clearTimeout(saveTimeout)
     saveTimeout = setTimeout(async () => {
         const nombre = document.querySelector('.detail-titulo').value
         const contenido = textarea.value
-
-        // guardar local siempre
-        await guardarLocal('entradas', { ...tabActiva.entrada, nombre, contenido })
-
-        if (hayInternet) {
-            // guardar en supabase
-            await supabase.from('entradas').update({ nombre, contenido }).eq('id', tabActiva.entrada.id)
-            await refrescarCache()
-        } else {
-            // guardar como pendiente
-            await agregarPendiente({
-                tipo: 'update_entrada',
-                item_id: tabActiva.entrada.id,
-                nombre,
-                contenido
-            })
-            console.log('sin internet, guardado localmente')
-        }
-
+        await supabase.from('entradas').update({ nombre, contenido }).eq('id', tabActiva.entrada.id)
+        await refrescarCache()
         tabActiva.entrada.nombre = nombre
         tabActiva.entrada.contenido = contenido
         tabActiva.draft = null
         tabActiva.draftNombre = null
         tabActiva.unsaved = false
         renderTabs()
+        await cargarArbol()
     }, 1000)
 }
 
@@ -935,61 +856,29 @@ const searchInput = document.getElementById('search-input')
 const searchResults = document.getElementById('search-results')
 
 searchInput.addEventListener('input', async (e) => {
-    await buscar(
-        e.target.value,
-        searchResults,
-        searchInput,
-    )
-})
-
-document.addEventListener('keydown', async (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.code === 'KeyM') {
-        e.preventDefault()
-
-        searchInput.focus()
-
-        if (searchInput.value.trim() !== '') {
-            await buscar(
-                searchInput.value,
-                searchResults,
-                searchInput,
-            )
-        }
-    }
-})
-
-async function buscar(query, searchResults, searchInput) {
-    query = query.trim()
-
+    const query = e.target.value.trim()
     if (!query) {
         searchResults.style.display = 'none'
         return
     }
-    
-    const { data: entradas, error } = await supabase
+
+    const { data: entradas } = await supabase
         .from('entradas')
         .select('*')
         .ilike('nombre', `%${query}%`)
         .limit(5)
 
-    if (error) {
-        console.error('Error de Supabase:', error.message)
-        return
-    }
-    
     searchResults.innerHTML = ''
-
-    if (!entradas || entradas.length === 0) {
+    if (entradas.length === 0) {
         searchResults.innerHTML = '<div class="search-result-item">No encontrado</div>'
         searchResults.style.display = 'block'
         return
     }
-    
-    entradas.forEach((entrada) => {
+
+    entradas.forEach(entrada => {
         const div = document.createElement('div')
         div.classList.add('search-result-item')
         div.textContent = entrada.nombre
-        
         div.addEventListener('click', () => {
             abrirEntrada(entrada)
             searchInput.value = ''
@@ -998,10 +887,10 @@ async function buscar(query, searchResults, searchInput) {
         searchResults.appendChild(div)
     })
     searchResults.style.display = 'block'
-}
-    
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-bar') && !e.target.closest('.search-results')) {
+})
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-bar') && !e.target.closest('.search-results')) {
         searchInput.value = ''
         searchResults.style.display = 'none'
     }
@@ -1059,10 +948,4 @@ function aplicarTema(tema) {
     } else {
         document.body.classList.remove('tema-claro')
     }
-}
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-        .then(() => console.log('SW registrado'))
-        .catch(err => console.error('SW error:', err))
 }
