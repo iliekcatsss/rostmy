@@ -68,7 +68,6 @@
     /* max-width: 1200px; */
     display: flex;
     flex-direction: column;
-    gap: 20px;
 }
 
 .detail-titulo {
@@ -87,11 +86,9 @@
     background: #121314;
     color: #aaa;
     border: none;
-    border-right: 1px solid #28292a;
-    padding: 20px;
     font-family: 'Fira Code', monospace;
     font-size: 1rem;
-    height: 70vh;
+    height: 100%;
     resize: none;
     outline: none;
 }
@@ -116,6 +113,16 @@ button {
     margin-left: 10px;
     padding: 0 5px;
     font-size: 12px;
+}
+
+.guardar {
+    display: block;
+    bottom: 0;
+    width: 100%;
+    padding: 18px;
+    background: #2294ba;
+    text-align: center;
+    z-index: 50;
 }
 
 .item-contenedor {
@@ -190,6 +197,8 @@ button {
 }
 
 .editor-container {
+    padding-top: 3px;
+    padding-left: 3px;
     display: flex;
     width: 100%;
     background: #121314;
@@ -210,8 +219,7 @@ button {
 }
 
 .detail-contenido, #preview {
-    height: 75vh;
-    padding: 25px;
+    height: 100%;
     background: #121314;
 }
 
@@ -220,8 +228,9 @@ button {
     background: #121314;
     color: #e0e0e0;
     padding: 20px;
-    height: 70vh;
+    height: 85vh;
     overflow-y: auto;
+    border-left: 1px solid #28292a;
 }
 
 /* modal */

@@ -49,10 +49,8 @@ label {
 
 input, select, textarea {
     padding: 8px;
-    margin-top: 5px;
     background: #191a1b;
     color: white;
-    border-radius: 5px;
     border: 1px solid #28292a;
     box-sizing: border-box;
     resize: none;
@@ -60,8 +58,8 @@ input, select, textarea {
 
 input:focus, textarea:focus {
     border: none;
-    outline: 1px solid #277893;
-    outline-offset: 2px;
+    /* outline: 1px solid #277893; */
+    /* outline-offset: 2px; */
 }
 
 select:focus {
