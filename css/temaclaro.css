@@ -1,7 +1,8 @@
 * {
-    --border: #aaa;
-    --bg: #eee;
-    --bg2: #ccc;
+    --border: #f0f1f2;
+    --bg: #fafafd;
+    --bg2: #ffffff;
+    --bg3: #e7e7e7;
 }
 
 body.tema-claro {
@@ -41,6 +42,14 @@ body.tema-claro .tab.activa {
     border-top: 1px solid black;
 }
 
+body.tema-claro .tabs-row {
+    background: var(--bg);
+}
+
+body.tema-claro .tabs-row::after {
+    background: var(--border);
+}
+
 body.tema-claro .detail-contenido,
 body.tema-claro #preview {
     background: var(--bg2);
@@ -57,13 +66,13 @@ body.tema-claro input {
 }
 
 body.tema-claro .search-bar {
-    background: #777;
+    background: var(--bg2);
     color: black;
     border-color: var(--border);
 }
 
 body.tema-claro .search-bar::placeholder {
-    color: #ddd;
+    color: #797979;
 }
 
 body.tema-claro .search-results {
@@ -86,4 +95,75 @@ body.tema-claro ::-webkit-scrollbar-thumb {
 
 body.tema-claro ::-webkit-scrollbar-thumb:hover {
     background: color-mix(in srgb, var(--border) 80%, black);
+}
+
+/* modal */
+body.tema-claro .modal-contenido {
+    background: var(--bg);
+    border-color: var(--border);
+    color: black;
+}
+
+.modal-contenido li:hover {
+    background: var(--bg2);
+}
+
+/* context menu */
+body.tema-claro .context-menu {
+    background: var(--bg2);
+    border-color: var(--border);
+}
+
+body.tema-claro .context-item {
+    color: black;
+}
+
+body.tema-claro .context-item:hover {
+    background: var(--bg);
+}
+
+body.tema-claro .ajustes-sidebar {
+    background: var(--bg3);
+    border-right: var(--border);
+}
+
+body.tema-claro .ajustes-sidebar h3 {
+    color: black;
+}
+
+body.tema-claro .ajuste-tab {
+    color: #444;
+}
+
+body.tema-claro .ajuste-tab:hover {
+    background: var(--bg2);
+}
+
+body.tema-claro .ajuste-tab.activa {
+    background: var(--bg2);
+    border-color: black;
+}
+
+body.tema-claro .ajuste-panel h3 {
+    color: black;
+    border-color: var(--border);
+}
+
+body.tema-claro .ajuste-panel p {
+    color: #444;
+}
+
+body.tema-claro .ajuste-panel label {
+    border-color: var(--border);
+    color: #aaa;
+}
+
+body.tema-claro .ajuste-panel select {
+    background: var(--bg3);
+    border-color: var(--border);
+    color: black;
+}
+
+body.tema-claro #modal-ajustes-cerrar:hover {
+    color: black;
 }

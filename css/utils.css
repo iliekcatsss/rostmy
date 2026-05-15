@@ -26,6 +26,11 @@ a {
         background: #252627;
     }
 
+    body.tema-claro .tree li:not(.folder):hover,
+    body.tema-claro .folder > body.tema-claro span:hover {
+        background: var(--bg2);
+    }
+
     .guardar:hover {
         cursor: pointer;
     }
