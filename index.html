@@ -6,6 +6,7 @@
     <title>Rostmy</title>
     <link rel="stylesheet" href="css/main.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="icon" href="/images/favicon-dark.ico" media="(prefers-color-scheme: light)">
     <link rel="icon" href="/images/favicon-light.ico" media="(prefers-color-scheme: dark)">
 </head>
@@ -20,11 +21,14 @@
     <div id="tabs-dropdown" class="tabs-dropdown"></div>
     
     <div class="content">
+        <div class="card side">
+            <button id="btn-logout" class="icon"><i data-lucide="log-out"></i></button>
+            
+            <button id="btn-ajustes" class="icon"><i data-lucide="settings"></i></button>
+        </div>
         <div class="card tree">
-            <button id="btn-logout">Cerrar Sesión</button>
-            <button id="btn-ajustes">⚙️ Ajustes</button>
             <aside class="sidebar">
-                <button id="btn-nueva-carpeta"> + Carpeta</button>
+                <button id="btn-nueva-carpeta" class="icon"><i data-lucide="folder-plus"></i></button>
                 <ul class="tree" id="arbol"></ul>
             </aside>
         </div>
@@ -60,12 +64,24 @@
     </div>
 
     <div class="context-menu" id="context-menu" style="display: none;">
-        <button class="context-item" data-action="nueva-entrada">Nueva entrada 📄</button>
-        <button class="context-item" data-action="nueva-sub">Nueva subcarpeta 📁</button>
-        <button class="context-item" data-action="rename">Renombrar ✏️</button>
-        <button class="context-item" data-action="move">Mover 📦️</button>
-        <button class="context-item" data-action="share">Compartir 🔗</button>
-        <button class="context-item" data-action="delete">Eliminar 🗑️</button>
+        <button class="context-item" data-action="nueva-entrada">
+            <i data-lucide="file-plus-corner"></i> Nueva entrada
+        </button>
+        <button class="context-item" data-action="nueva-sub">
+            <i data-lucide="folder-plus"></i> Nueva subcarpeta
+        </button>
+        <button class="context-item" data-action="rename">
+            <i data-lucide="pencil"></i> Renombrar
+        </button>
+        <button class="context-item" data-action="move">
+            <i data-lucide="box"></i> Renombrar
+        </button>
+        <button class="context-item" data-action="share">
+            <i data-lucide="link"></i> Compartir
+        </button>
+        <button class="context-item" data-action="delete">
+            <i data-lucide="trash-2"></i> Eliminar
+        </button>
     </div>
 
     <div id="modal-ajustes" class="modal" style="display: none;">
@@ -89,6 +105,7 @@
                         <select id="select-tema">
                             <option value="oscuro">Oscuro</option>
                             <option value="claro">Claro</option>
+                            <option value="dispositivo">Sincronizar con el dispositivo</option>
                         </select>
                     </label>
                 </div>

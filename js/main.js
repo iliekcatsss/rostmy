@@ -163,17 +163,13 @@ function renderCarpeta(carpeta, todasCarpetas, todasEntradas) {
 
     li.innerHTML = `
         <div class="folder-header">
-            <span class="folder-nombre">${carpeta.nombre}</span>
+            <span class="folder-nombre">
+                <i data-lucide="chevron-right" class="chevron-folder"></i>
+                ${carpeta.nombre}
+            </span>
             </div>
             <ul></ul>
             `
-            // <div class="item-acciones">
-            //     <button class="btn-icon btn-nueva-sub" title="Nueva subcarpeta">📁</button>
-            //     <button class="btn-icon btn-nueva-entrada" title="Nueva entrada">📄</button>
-            //     <button class="btn-icon btn-rename" title="Renombrar">✏️</button>
-            //     <button class="btn-icon btn-mover" title="Mover">📦</button>
-            //     <button class="btn-icon btn-delete" title="Eliminar carpeta">🗑️</button>
-            // </div>
 
     const header = li.querySelector('.folder-header');
     header.onclick = (e) => {
@@ -198,40 +194,10 @@ function renderCarpeta(carpeta, todasCarpetas, todasEntradas) {
     entradas.forEach(entrada => {
         ul.appendChild(renderEntrada(entrada))
     })
-
-    // eventos
-    li.querySelector('.folder-nombre').addEventListener('click', () => {
-        li.classList.toggle('open')
-    })
-    // li.querySelector('.btn-nueva-sub').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     nuevaCarpeta(carpeta.id)
-    // })
-    // li.querySelector('.btn-nueva-entrada').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     nuevaEntrada(carpeta.id)
-    // })
-    // li.querySelector('.btn-rename').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     const nuevo = prompt('Nuevo nombre:', carpeta.nombre)
-    //     if (!nuevo || nuevo === carpeta.nombre) return
-    //     supabase.from('carpetas').update({ nombre: nuevo }).eq('id', carpeta.id).then(cargarArbol)
-    // })
-    // li.querySelector('.btn-mover').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     mostrarModalMover(async (nuevoParentId) => {
-    //         await supabase.from('carpetas').update({ parent_id: nuevoParentId }).eq('id', carpeta.id)
-    //         await cargarArbol()
-    //     }, true, carpeta.id)
-    // })
-    // li.querySelector('.btn-delete').addEventListener('click', (e) => {
-    //     e.stopPropagation()
-    //     eliminarCarpeta(carpeta.id)
-    // })
     
     li.addEventListener('contextmenu', (e) => mostrarContextMenu(e, 'carpeta', carpeta.id))
     return li
-}
+} 
 
 function renderEntrada(entrada) {
     const li = document.createElement('li')
@@ -851,7 +817,9 @@ document.querySelector('.detail-titulo').addEventListener('input', () => {
     autoguardar()
 })
 
-// searchbar
+// ================================
+// SEARCHBAR
+// ================================
 const searchInput = document.getElementById('search-input')
 const searchResults = document.getElementById('search-results')
 
@@ -896,7 +864,9 @@ document.addEventListener('click', (e) => {
     }
 })
 
-// ajustes
+// ================================
+// AJUSTES
+// ================================
 document.getElementById('btn-ajustes').addEventListener('click', () => {
     document.getElementById('ajuste-email').textContent = user.email
     document.getElementById('modal-ajustes').style.display = 'flex'
@@ -915,7 +885,9 @@ document.querySelectorAll('.ajuste-tab').forEach(btn => {
     })
 })
 
-// cambiar contraseña
+// ================================
+// CONTRASEÑA
+// ================================
 document.getElementById('btn-cambiar-password').addEventListener('click', async () => {
     const { error } = await supabase.auth.resetPasswordForEmail(user.email)
     if (error) {
@@ -925,27 +897,99 @@ document.getElementById('btn-cambiar-password').addEventListener('click', async 
     }
 })
 
-// cerrar sesión
+// ================================
+// CERRAR SESIÓN (Manda de vuelta a login)
+// ================================
 document.getElementById('btn-logout-ajustes').addEventListener('click', async () => {
     await supabase.auth.signOut()
     window.location.href = "/login.html"
 })
 
-// tema
-const tema = localStorage.getItem('tema') || 'oscuro'
-aplicarTema(tema)
-document.getElementById('select-tema').value = tema
+// ================================
+// TEMA / APARIENCIA (Soporta Oscuro, Claro y Dispositivo)
+// ================================
+const temaGuardado = localStorage.getItem('tema') || 'oscuro'
+aplicarTema(temaGuardado)
 
-document.getElementById('select-tema').addEventListener('change', (e) => {
-    aplicarTema(e.target.value)
-    localStorage.setItem('tema', e.target.value)
-})
-
+const selectTema = document.getElementById('select-tema')
+if (selectTema) {
+    selectTema.value = temaGuardado
+    selectTema.addEventListener('change', (e) => {
+        aplicarTema(e.target.value)
+        localStorage.setItem('tema', e.target.value)
+    })
+}
+    
 function aplicarTema(tema) {
-    console.log('Tema: ' + tema)
-    if (tema === 'claro') {
+    console.log('Tema seleccionado: ' + tema)
+
+    let temaReal = tema
+
+    // revisar cual tema tiene el OS
+    if (tema === 'dispositivo') {
+        const prefiereOscuro = window.matchMedia('(prefers-color-scheme: dark)').matches
+        temaReal = prefiereOscuro ? 'oscuro' : 'claro'
+    }
+
+    // rostmy nativo
+    if (temaReal === 'claro') {
         document.body.classList.add('tema-claro')
+        document.body.setAttribute('data-theme', 'light')
     } else {
         document.body.classList.remove('tema-claro')
+        document.body.setAttribute('data-theme', 'dark')
     }
 }
+// escuchar cambios del OS
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    const temaActual = localStorage.getItem('tema') || 'oscuro'
+    // recalcular si la opcion es "dispositivo"
+    if (temaActual === 'dispositivo') {
+        aplicarTema('dispositivo')
+    }
+})
+
+// ================================
+// LUCIDE + VOYEUR (Creo que funciona)
+// ================================
+const inicializarIconos = () => {
+    if (window.lucide) {
+        window.lucide.createIcons();
+    } else {
+        setTimeout(inicializarIconos, 100);
+    }
+};
+
+if (document.readyState === 'complete') {
+    inicializarIconos();
+} else {
+    window.addEventListener('load', inicializarIconos);
+}
+
+let voyeur;
+
+const actualizarIconos = () => {
+    if (window.lucide) {
+        if (voyeur) voyeur.disconnect();
+
+        lucide.createIcons();
+
+        if (voyeur) encenderVoyeur();
+    }
+};
+
+const encenderVoyeur = () => {
+    voyeur.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+};
+
+voyeur = new MutationObserver((mutations) => {
+    const huboCambios = mutations.some(m => m.addedNodes.length > 0);
+    if (huboCambios) {
+        actualizarIconos();
+    }
+});
+
+actualizarIconos();

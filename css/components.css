@@ -1,3 +1,4 @@
+/* arbol + folders */
 .tree ul {
     padding-left: 16px;
     margin: 0;
@@ -31,11 +32,8 @@
 }
 
 .folder-nombre::before {
-    content: "▶";
-    font-size: 10px;
-    margin-right: 8px;
-    display: inline-block;
-    width: 12px;
+    display: none !important;
+    content: "" !important;
 }
 
 .folder.open > .folder-header .folder-nombre::before {
@@ -63,6 +61,21 @@
     gap: 5px;
 }
 
+.chevron-folder {
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+    transition: transform 0.15s ease;
+    flex-shrink: 0;
+    color: #707275;
+}
+
+.folder.open > .folder-header .chevron-folder {
+    transform: rotate(90deg);
+    color: currentColor;
+}
+
+/* editor */
 .detail {
     width: 100%;
     /* max-width: 1200px; */
@@ -402,6 +415,8 @@ button {
 
 .context-item {
     display: block;
+    align-items: center;
+    gap: 10px;
     width: 100%;
     padding: 8px 12px;
     background: none;
@@ -535,4 +550,16 @@ button {
 
 #modal-ajustes-cerrar:hover {
     color: white;
+}
+
+/* lucide */
+svg.lucide {
+    stroke: currentColor;
+    width: 32px; 
+    height: 32px;
+    vertical-align: middle;
+}
+
+#btn-ajustes {
+    margin-top: auto !important;
 }

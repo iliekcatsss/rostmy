@@ -21,6 +21,11 @@ body.tema-claro .card.tree {
     border-color: var(--border);
 }
 
+body.tema-claro .card.side {
+    background: var(--bg);
+    border-color: var(--border);
+}
+
 body.tema-claro #navbar{
     background: var(--bg);
     border-color: var(--border);
@@ -165,5 +170,13 @@ body.tema-claro .ajuste-panel select {
 }
 
 body.tema-claro #modal-ajustes-cerrar:hover {
+    color: black;
+}
+
+body.tema-claro .icon {
+    color: #666;
+}
+
+body.tema-claro .icon:hover {
     color: black;
 }
